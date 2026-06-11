@@ -1,0 +1,10 @@
+{
+  "name": "Mi Semana 🛵",
+  "short_name": "Mi Semana",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#FF3F6C",
+  "orientation": "portrait",
+  "icons": []
+}
