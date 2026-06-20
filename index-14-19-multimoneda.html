@@ -1,0 +1,3870 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Mi Semana 🛵</title>
+
+<!-- ══ PWA META + MANIFEST ══ -->
+<link rel="manifest" href="./manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mi Semana 🛵">
+<meta name="application-name" content="Mi Semana 🛵">
+<meta name="theme-color" content="#FF3F6C">
+<meta name="description" content="Registro de ganancias semanales para repartidores de PedidosYa">
+
+<!-- ══ META TAGS iOS / Android ══ -->
+
+<style>
+/* Fuentes del sistema — carga instantánea, sin internet */
+
+.stats-accordion-header{
+background:var(--card);border:1px solid var(--border);border-radius:12px;
+padding:12px 14px;margin-bottom:8px;font-weight:700;cursor:pointer;
+display:flex;justify-content:space-between;align-items:center;
+}
+.stats-accordion-content{display:none;}
+.stats-accordion-content.open{display:block;}
+
+/* ── HISTORIAL: BLOQUES MENSUALES ── */
+.hist-month-block {
+  margin-bottom: 10px;
+}
+
+.hist-month-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, var(--rappi-pink) 0%, #c2185b 100%);
+  border-radius: 14px;
+  padding: 11px 14px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s;
+}
+.hist-month-header:active { opacity: 0.88; }
+
+.hm-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hm-arrow {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.85);
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+.hm-label {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #fff;
+}
+.hm-weeks-count {
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.75);
+  margin-top: 2px;
+}
+.hm-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+.hm-total {
+  font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #fff;
+}
+.hm-neto-label {
+  font-size: 0.6rem;
+  color: rgba(255,255,255,0.8);
+  margin-top: 2px;
+}
+
+/* Contenido colapsable del mes */
+.hist-month-detail {
+  display: none;
+  padding: 8px 0 0;
+}
+.hist-month-detail.open {
+  display: block;
+}
+
+/* Resumen mensual */
+.hist-month-summary {
+  background: var(--card);
+  border: 1.5px solid var(--rappi-pink);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+.hms-title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--rappi-pink-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+.hms-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.hms-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.hms-item-full {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+.hms-lbl {
+  font-size: 0.6rem;
+  color: var(--sub);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.hms-val {
+  font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.hms-neg { color: var(--red); }
+
+.hms-totals-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+  margin-bottom: 6px;
+}
+.hms-tot-item {
+  border-radius: 12px;
+  padding: 14px 12px;
+  text-align: center;
+}
+.hms-tot-gen {
+  background: var(--rappi-pink-light);
+  border: 1.5px solid rgba(194,24,91,0.35);
+}
+.hms-tot-neto {
+  background: var(--green-light);
+  border: 1.5px solid rgba(0,150,80,0.3);
+}
+.hms-tot-lbl {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 2px;
+}
+.hms-tot-gen .hms-tot-lbl { color: var(--rappi-pink-dark); }
+.hms-tot-neto .hms-tot-lbl { color: var(--green); }
+.hms-tot-val {
+  font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.88rem;
+  font-weight: 900;
+  margin-top: 4px;
+}
+.hms-tot-gen .hms-tot-val { color: var(--rappi-pink-dark); }
+.hms-tot-neto .hms-tot-val { color: var(--green); }
+.hms-tot-sub {
+  font-size: 0.52rem;
+  color: var(--rappi-pink-dark);
+  opacity: 0.75;
+  margin: 1px 0 3px;
+}
+
+/* ── ESTADÍSTICAS: KPI GRID ── */
+.stats-kpi-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;
+}
+.stats-kpi {
+  border-radius: 12px; padding: 14px 12px; display: flex; flex-direction: column; gap: 4px;
+}
+.stats-kpi-pink  { background: var(--rappi-pink-light); border: 1.5px solid rgba(194,24,91,0.35); }
+.stats-kpi-green { background: var(--green-light); border: 1.5px solid rgba(0,150,80,0.3); }
+.stats-kpi-purple{ background: var(--purple-light); border: 1.5px solid var(--purple-light-border,#e9d5ff); }
+.stats-kpi-blue  { background: #e0f2fe; border: 1.5px solid rgba(2,132,199,0.35); }
+body.dark-forced .stats-kpi-blue { background: #0a2233; border-color: rgba(2,132,199,0.5); }
+.stats-kpi-lbl {
+  font-size: 0.58rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.3px; opacity: 0.85;
+}
+.stats-kpi-pink   .stats-kpi-lbl { color: var(--rappi-pink-dark); }
+.stats-kpi-green  .stats-kpi-lbl { color: var(--green); }
+.stats-kpi-purple .stats-kpi-lbl { color: var(--purple); }
+.stats-kpi-blue   .stats-kpi-lbl { color: #0284c7; }
+.stats-kpi-val {
+  font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
+  font-size: 0.86rem; font-weight: 900;
+  margin-top: 2px;
+}
+.stats-kpi-pink   .stats-kpi-val { color: var(--rappi-pink-dark); }
+.stats-kpi-green  .stats-kpi-val { color: var(--green); }
+.stats-kpi-purple .stats-kpi-val { color: var(--purple); }
+.stats-kpi-blue   .stats-kpi-val { color: #0284c7; }
+.stats-kpi-sub {
+  font-size: 0.55rem; opacity: 0.65; color: var(--sub);
+}
+
+/* ── ESTADÍSTICAS: FILA MENSUAL ── */
+.stats-month-row { margin-bottom: 8px; }
+.smr-header {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--card); border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 10px 13px;
+  cursor: pointer; user-select: none; -webkit-tap-highlight-color:transparent;
+}
+.smr-header:active { opacity: 0.85; }
+.smr-left  { display: flex; align-items: center; gap: 8px; }
+.smr-arr   { font-size: 0.65rem; color: var(--sub); flex-shrink: 0; }
+.smr-lbl   { font-size: 0.85rem; font-weight: 800; color: var(--text); }
+.smr-sub   { font-size: 0.6rem; color: var(--sub); margin-top: 1px; }
+.smr-right { text-align: right; flex-shrink: 0; }
+.smr-total {
+  font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
+  font-size: 0.82rem; font-weight: 800; color: var(--rappi-pink-dark);
+}
+.smr-neto  { font-size: 0.6rem; color: var(--green); font-weight: 700; margin-top: 1px; }
+.smr-detail {
+  display: none; background: var(--bg); border: 1px solid var(--border);
+  border-top: none; border-radius: 0 0 12px 12px; padding: 10px 12px;
+}
+.smr-detail.open { display: block; }
+.smr-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 10px;
+}
+.smr-gi { display: flex; flex-direction: column; gap: 1px; }
+.smr-gi-full { grid-column: 1/-1; flex-direction: row; justify-content: space-between; align-items: center; }
+.smr-gl { font-size: 0.6rem; color: var(--sub); font-weight: 600; text-transform: uppercase; }
+.smr-gv {
+  font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
+  font-size: 0.78rem; font-weight: 700; color: var(--text);
+}
+.smr-week-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 5px 0; border-top: 1px solid var(--border);
+  font-size: 0.72rem;
+}
+.smr-wl { color: var(--sub); }
+.smr-wv {
+  font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
+  font-weight: 700; color: var(--text);
+}
+
+/* ── PRODUCTIVIDAD: días y turnos ── */
+.prod-shift-summary {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px;
+}
+.prod-shift-card {
+  border-radius: 12px; padding: 11px 10px; text-align: center;
+}
+.prod-shift-dia   { background: #fffde7; border: 1.5px solid #fdd835; }
+.prod-shift-noche { background: var(--purple-light); border: 1.5px solid var(--purple-light-border,#e9d5ff); }
+body.dark-forced .prod-shift-dia { background: #1a1600; border-color: #665800; }
+.prod-sc-icon { font-size: 1.3rem; margin-bottom: 3px; }
+.prod-sc-lbl  { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; color: var(--sub); margin-bottom: 4px; }
+.prod-shift-dia   .prod-sc-lbl { color: #92400e; }
+.prod-shift-noche .prod-sc-lbl { color: var(--purple); }
+.prod-sc-val {
+  font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
+  font-size: 0.82rem; font-weight: 900;
+}
+.prod-shift-dia   .prod-sc-val { color: #92400e; }
+.prod-shift-noche .prod-sc-val { color: var(--purple); }
+.prod-sc-pct { font-size: 0.58rem; color: var(--sub); margin-top: 2px; }
+
+.prod-days-title {
+  font-size: 0.65rem; font-weight: 800; text-transform: uppercase;
+  color: var(--sub); letter-spacing: 0.5px; margin-bottom: 8px;
+}
+.prod-day-row { margin-bottom: 10px; }
+.prod-day-row-clickable { cursor: pointer; padding: 6px; margin: 0 -6px 4px; border-radius: 10px; transition: background 0.15s ease; }
+.prod-day-row-clickable:active { background: rgba(127,127,127,0.08); }
+.prod-day-row-clickable .prod-detail-panel { cursor: default; }
+.prod-day-header {
+  display: flex; align-items: center; gap: 7px; margin-bottom: 4px;
+}
+.prod-day-emoji { font-size: 1rem; flex-shrink: 0; }
+.prod-day-name  { font-size: 0.8rem; font-weight: 700; color: var(--text); flex: 1; }
+.prod-day-total {
+  font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
+  font-size: 0.8rem; font-weight: 800; color: var(--rappi-pink-dark);
+}
+.prod-bar-wrap {
+  height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; margin-bottom: 4px;
+}
+.prod-bar {
+  height: 100%; background: linear-gradient(90deg, var(--rappi-pink), #c2185b);
+  border-radius: 99px; transition: width 0.4s ease;
+}
+/* Barra "choque" día vs noche: dos mitades que crecen desde el centro */
+.prod-clash-wrap {
+  display: flex; align-items: center; height: 8px; border-radius: 99px;
+  overflow: hidden; background: var(--border); margin-bottom: 4px;
+}
+.prod-clash-day, .prod-clash-noche {
+  height: 100%; transition: width 0.4s ease;
+}
+.prod-clash-day {
+  background: linear-gradient(270deg, #fdd835, #f9a825);
+  border-radius: 99px 0 0 99px;
+}
+.prod-clash-noche {
+  background: linear-gradient(90deg, #7c3aed, var(--purple));
+  border-radius: 0 99px 99px 0;
+  margin-left: auto;
+}
+.prod-clash-mid {
+  width: 2px; height: 12px; background: var(--text); opacity: 0.25; flex-shrink: 0;
+}
+.prod-day-detail {
+  display: flex; justify-content: space-between; gap: 12px;
+}
+.prod-shift-lbl {
+  font-size: 0.62rem; color: var(--sub);
+}
+.prod-shift-lbl.is-winner { color: var(--text); }
+.prod-shift-val {
+  font-weight: 700; color: var(--text);
+}
+.prod-shift-card { cursor: pointer; transition: transform 0.15s ease; }
+.prod-shift-card:active { transform: scale(0.97); }
+.prod-sc-hint { font-size: 0.54rem; color: var(--sub); margin-top: 3px; opacity: 0.75; }
+.prod-detail-panel {
+  display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border);
+}
+.prod-detail-panel.open { display: block; }
+.prod-detail-title {
+  font-size: 0.62rem; font-weight: 800; text-transform: uppercase;
+  color: var(--sub); letter-spacing: 0.4px; margin-bottom: 8px;
+}
+.prod-detail-best {
+  font-size: 0.72rem; font-weight: 700; margin-bottom: 10px; padding: 7px 9px;
+  background: var(--card-bg, rgba(127,127,127,0.08)); border-radius: 9px;
+  line-height: 1.5;
+}
+.prod-detail-best .ars-label { white-space: nowrap; }
+.prod-detail-row {
+  display: flex; align-items: center; gap: 8px; padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.prod-detail-row:last-child { border-bottom: none; }
+.prod-detail-row-clickable { cursor: pointer; }
+.prod-detail-row-clickable:active { opacity: 0.75; }
+.prod-detail-subpanel {
+  display: none; padding: 2px 0 6px 26px; border-bottom: 1px solid var(--border);
+}
+.prod-detail-subpanel.open { display: block; }
+.prod-detail-subpanel .prod-detail-row { border-bottom: 1px dashed var(--border); padding: 5px 0; }
+.prod-detail-subpanel .prod-detail-row:last-child { border-bottom: none; }
+.prod-detail-rank { font-size: 0.7rem; flex-shrink: 0; width: 18px; color: var(--sub); font-weight: 700; }
+.prod-detail-info { flex: 1; min-width: 0; }
+.prod-detail-day { font-size: 0.74rem; font-weight: 700; color: var(--text); }
+.prod-detail-date { font-size: 0.6rem; color: var(--sub); }
+.prod-detail-val {
+  font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
+  font-size: 0.74rem; font-weight: 800; color: var(--text); flex-shrink: 0;
+}
+
+/* ── ESTADÍSTICAS: ACORDEONES ── */
+.sacc-block {
+  margin-bottom: 8px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1.5px solid var(--border);
+}
+.sacc-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 15px;
+  background: var(--card);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.sacc-header:active { opacity: 0.82; }
+.sacc-icon  { font-size: 1rem; flex-shrink: 0; }
+.sacc-title { flex: 1; font-size: 0.88rem; font-weight: 800; color: var(--text); }
+.sacc-arrow { font-size: 0.65rem; color: var(--sub); flex-shrink: 0; }
+.sacc-body  { display: none; padding: 12px 14px 14px; background: var(--bg); }
+.sacc-body.open { display: block; }
+
+/* ── ESTADÍSTICAS: SUB-TABS ── */
+.stats-subtab-bar {
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  gap: 4px;
+  padding: 0 0 10px;
+  margin-bottom: 2px;
+  border-bottom: 1.5px solid var(--border);
+}
+.stats-subtab-bar::-webkit-scrollbar { display: none; }
+
+.stats-stab {
+  flex: none;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 13px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--sub);
+  cursor: pointer;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.15s;
+}
+.stats-stab.active {
+  background: var(--rappi-pink);
+  border-color: var(--rappi-pink);
+  color: #fff;
+}
+.stats-stab:active { opacity: 0.8; }
+
+.stats-subpanel { display: none; }
+.stats-subpanel.active { display: block; }
+.hms-ingreso-row {
+  margin-top: 10px;
+  background: var(--purple-light);
+  border: 1.5px solid var(--purple-light-border, #e9d5ff);
+  border-radius: 12px;
+  padding: 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  text-align: center;
+}
+.hms-ingreso-lbl {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--purple);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.hms-ingreso-sub {
+  font-size: 0.55rem;
+  color: var(--purple);
+  opacity: 0.7;
+}
+.hms-ingreso-val {
+  font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: var(--purple);
+  margin-top: 4px;
+}
+
+</style>
+<style>
+
+  :root {
+    --rappi-pink: #FF3F6C;
+    --rappi-pink-dark: #e0325b;
+    --rappi-pink-light: #fff0f3;
+    --rappi-red: #d4194f;
+    --bg: #f2f3f7;
+    --card: #ffffff;
+    --border: #e5e7ef;
+    --text: #1a1d27;
+    --sub: #6b7280;
+    --muted: #9ca3af;
+    --green: #00a651;
+    --green-light: #e6f7ef;
+    --green-border: #86efac;
+    --amber: #d97706;
+    --amber-light: #fffbeb;
+    --blue: #0284c7;
+    --blue-light: #e0f2fe;
+    --red: #dc2626;
+    --red-light: #fef2f2;
+    --orange: #ea580c;
+    --orange-light: #fff7ed;
+    --purple: #7c3aed;
+    --purple-light: #f5f3ff;
+    --teal: #0d9488;
+    --teal-light: #f0fdfa;
+    --input-bg: #f8f9fc;
+    --input-border: #dde1ea;
+    --input-focus: #FF3F6C;
+    --day-bg: #f0f4ff;
+    --night-bg: #faf5ff;
+    --day-tag-bg: #fef3c7;
+    --day-tag-color: #b45309;
+    --night-tag-bg: #ede9fe;
+    --night-tag-color: #6d28d9;
+  }
+
+  /* ── MODO OSCURO: controlado por el toggle manual del header ── */
+  @media not all and (prefers-color-scheme: never-matches) {
+    :root {
+      --bg: #0f0f0f;
+      --card: #1a1a1a;
+      --border: #2a2a2a;
+      --text: #f0f0f0;
+      --sub: #a0a0a8;
+      --muted: #606068;
+      --input-bg: #1f1f1f;
+      --input-border: #333340;
+      --rappi-pink-light: #2a0d18;
+      --green-light: #0a1f12;
+      --green-border: #1a5a30;
+      --amber-light: #1f1800;
+      --blue-light: #071628;
+      --red-light: #1f0707;
+      --orange-light: #1f0e00;
+      --purple-light: #130a26;
+      --teal-light: #041614;
+      --day-bg: #0e1020;
+      --night-bg: #130e20;
+      --day-tag-bg: #2a1f00;
+      --day-tag-color: #e0a030;
+      --night-tag-bg: #1a1030;
+      --night-tag-color: #a07ae0;
+      /* Modal backgrounds */
+      --modal-bg: #1a1a1a;
+      --modal-row-bg: #222228;
+      --modal-input-bg: #111118;
+    }
+    header { background: #111; }
+    .tabs { background: #111; }
+    .week-select-wrap select { background: #1f1f1f; color: #f0f0f0; }
+    .inp-wrap { background: #1f1f1f; }
+    .inp-wrap input[type="text"] { color: #f0f0f0; }
+    .editable-inp-wrap { background: #1f1f1f; }
+    .total-row { background: #1f1f1f; }
+    .total-row.row-grand { background: #2a0d18; }
+    .stats-accordion-header { background: #1a1a1a; }
+    #toast { background: #e0e0e0; color: #111; }
+    #install-banner { background: #1a1a1a; border-top-color: #2a2a2a; }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    padding: 0 0 24px;
+    max-width: 430px;
+    margin: 0 auto;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px 6px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-left h1 {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.1;
+  }
+
+  .header-left p {
+    font-size: 0.7rem;
+    color: var(--sub);
+    margin-top: 2px;
+  }
+
+  .badge-pedidosya {
+    background: var(--rappi-pink);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.3px;
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 0 10px;
+    gap: 2px;
+  }
+
+  .tab-btn {
+    flex: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 10px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--sub);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border-bottom: 2.5px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.1s, border-color 0.1s;
+  }
+
+  .tab-btn.active {
+    color: var(--rappi-pink);
+    border-bottom-color: var(--rappi-pink);
+  }
+
+  .tab-icon { font-size: 0.9rem; }
+
+  /* ── TAB PANELS ── */
+  .tab-panel { display: none; padding: 14px 14px 0; content-visibility: auto; }
+  .tab-panel.active { display: block; content-visibility: visible; }
+
+  /* ── WEEK PICKER ── */
+  .week-picker-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+  }
+
+  .week-picker-label {
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: var(--sub);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 3px;
+  }
+
+  .week-nav-row {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .week-select-wrap {
+    flex: 1;
+    position: relative;
+  }
+
+  .week-select-wrap select {
+    width: 100%;
+    background: var(--input-bg);
+    border: 1.5px solid var(--input-border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 6px 26px 6px 10px;
+    outline: none;
+    appearance: none;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  .week-select-wrap::after {
+    content: '▾';
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--sub);
+    font-size: 0.75rem;
+  }
+
+  .week-select-wrap select:focus { border-color: var(--rappi-pink); }
+
+  .nav-btn {
+    background: var(--input-bg);
+    border: 1.5px solid var(--input-border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 6px 8px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+  }
+
+  .nav-btn:hover { background: var(--border); border-color: var(--sub); }
+  .nav-btn:active { transform: scale(0.97); }
+
+  /* ── DAY TABS ── */
+  .day-tabs {
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+    padding: 0 0 2px;
+    margin-bottom: 8px;
+    scrollbar-width: none;
+  }
+
+  .day-tabs::-webkit-scrollbar { display: none; }
+
+  .day-tab {
+    flex-shrink: 0;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    text-align: center;
+    transition: all 0.15s;
+    min-width: 56px;
+  }
+
+  .day-tab .dt-abbr {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--sub);
+    display: block;
+  }
+
+  .day-tab .dt-date {
+    font-size: 0.52rem;
+    color: var(--muted);
+    display: block;
+    margin-top: 1px;
+  }
+
+  .day-tab.active {
+    background: var(--rappi-pink);
+    border-color: var(--rappi-pink);
+  }
+
+  .day-tab.active .dt-abbr { color: #fff; }
+  .day-tab.active .dt-date { color: rgba(255,255,255,0.75); }
+
+  /* ── DAY CARD ── */
+  .day-card {
+    background: var(--card);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    margin-bottom: 14px;
+  }
+
+  .day-card-header {
+    background: linear-gradient(135deg, var(--rappi-pink) 0%, #c2185b 100%);
+    padding: 6px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .day-card-header .dch-left { flex: 1; min-width: 0; }
+
+  .day-card-header .dch-name {
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: #fff;
+  }
+
+  .day-card-header .dch-date {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.75);
+    margin-top: 1px;
+  }
+
+  .dch-total {
+    font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #fff;
+    white-space: nowrap;
+    text-shadow: none;
+  }
+
+  /* ── SHIFTS ── */
+  .shift-block {
+    padding: 5px 6px 5px;
+  }
+
+  .shift-block.dia { background: var(--day-bg); }
+  .shift-block.noche {
+    background: var(--night-bg);
+    border-top: 1px solid var(--border);
+  }
+
+  .shift-title {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-bottom: 3px;
+  }
+
+  .tag {
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  .tag-dia { background: var(--day-tag-bg); color: var(--day-tag-color); }
+  .tag-noche { background: var(--night-tag-bg); color: var(--night-tag-color); }
+
+  .shift-subtotal {
+    margin-left: auto;
+    font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.72rem;
+    color: var(--sub);
+    font-weight: 500;
+  }
+
+  .inputs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+
+  .field-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .field-wrap label {
+    font-size: 0.52rem;
+    font-weight: 700;
+    color: var(--sub);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .field-wrap.efectivo label { color: var(--green); }
+  .field-wrap.efectivo { grid-column: 1 / -1; }
+  .field-wrap.efectivo .inp-wrap { max-width: 60%; margin: 0 auto; justify-content: center; }
+  .field-wrap.efectivo .inp-wrap input { text-align: center; flex: 0 1 auto; min-width: 0; }
+  .field-wrap.efectivo label { justify-content: center; }
+
+  .inp-wrap {
+    position: relative;
+    background: var(--card);
+    border: 1.5px solid var(--input-border);
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .inp-wrap:focus-within {
+    border-color: var(--rappi-pink);
+    box-shadow: 0 0 0 3px rgba(255,63,108,0.1);
+  }
+
+  .field-wrap.efectivo .inp-wrap {
+    border-color: var(--green-border);
+    background: var(--green-light);
+  }
+
+  .field-wrap.efectivo .inp-wrap:focus-within {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(0,166,81,0.12);
+  }
+
+  .inp-wrap input[type="text"] {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text);
+    padding: 5px 3px 5px 6px;
+    min-height: 24px;
+    font-size: 16px;
+  }
+
+  .inp-ars-tag {
+    font-size: 0.52rem;
+    font-weight: 700;
+    color: var(--muted);
+    opacity: 1;
+    padding-right: 10px;
+    padding-left: 2px;
+    flex-shrink: 0;
+    letter-spacing: 0.3px;
+    pointer-events: none;
+    user-select: none;
+  }
+  .field-wrap.efectivo .inp-ars-tag { color: var(--green); opacity: 1; }
+  /* Dim ARS tag while typing */
+  .inp-wrap:focus-within .inp-ars-tag { opacity: 0.35; }
+  /* Deduction ARS tags: full opacity */
+  .total-row.row-red    .editable-inp-wrap .inp-ars-tag { opacity: 1; }
+  .total-row.row-orange .editable-inp-wrap .inp-ars-tag { opacity: 1; }
+  .total-row.row-purple .editable-inp-wrap .inp-ars-tag { opacity: 1; }
+  .total-row.row-blue   .editable-inp-wrap .inp-ars-tag { opacity: 1; }
+
+  .inp-wrap input::placeholder { color: var(--muted); font-weight: 400; }
+  .inp-wrap input { color: var(--text); }
+  .field-wrap.efectivo .inp-wrap input { color: var(--green); font-weight: 700; }
+  .shift-block.noche .inp-wrap input { color: var(--text); }
+  .shift-block.noche .inp-wrap input::placeholder { color: var(--muted); }
+  .shift-block.noche .field-wrap.efectivo .inp-wrap input { color: var(--green); font-weight: 700; }
+  .noche-acum-note {
+    font-size: 0.52rem;
+    color: #7c3aed;
+    text-align: center;
+    margin-top: -2px;
+    margin-bottom: 3px;
+    letter-spacing: 0.2px;
+    font-style: italic;
+  }
+  body.dark-forced .noche-acum-note { color: var(--sub); }
+  /* EF. DEL DÍA */
+  .daily-cash-row {
+    padding: 4px 6px 5px;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+  }
+
+  .daily-cash-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: var(--green);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 5px;
+  }
+
+  .daily-cash-display {
+    background: var(--green-light);
+    border: 1.5px solid var(--green-border);
+    border-radius: 9px;
+    padding: 8px 10px;
+    font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--green);
+    text-align: center;
+  }
+
+  /* ── TOTALS CARD ── */
+  .totals-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  }
+
+  .totals-card-header {
+    background: linear-gradient(135deg, var(--rappi-pink) 0%, #c2185b 100%);
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .totals-rows {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .totals-sep {
+    font-size: 0.58rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 3px 0;
+    border-top: 1px solid var(--border);
+    margin-top: 3px;
+  }
+
+  .total-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    border-radius: 10px;
+    background: var(--input-bg);
+  }
+
+  .total-row .tr-label {
+    font-size: 0.68rem;
+    color: var(--sub);
+    font-weight: 600;
+  }
+
+  .total-row.editable .tr-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+  }
+
+  .total-row .tr-value {
+    font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    white-space: nowrap;
+  }
+
+  .total-row.row-efe { background: var(--green-light); }
+  .total-row.row-efe .tr-label { color: var(--green); font-weight: 600; }
+  .total-row.row-efe .tr-value { color: var(--green); }
+
+  .total-row.row-grand { background: var(--rappi-pink-light); }
+  .total-row.row-grand .tr-label { color: var(--rappi-pink-dark); font-weight: 700; }
+  .total-row.row-grand .tr-value { color: var(--rappi-pink-dark); font-size: 0.92rem; }
+
+  .total-row.row-red { background: var(--red-light); }
+  .total-row.row-red .tr-label { color: var(--red); font-weight: 600; }
+  .total-row.row-red .tr-value { color: var(--red); }
+
+  .total-row.row-orange { background: var(--orange-light); }
+  .total-row.row-orange .tr-label { color: var(--orange); font-weight: 600; }
+  .total-row.row-orange .tr-value { color: var(--orange); }
+
+  .total-row.row-purple { background: var(--purple-light); }
+  .total-row.row-purple .tr-label { color: var(--purple); font-weight: 600; }
+  .total-row.row-purple .tr-value { color: var(--purple); }
+
+  .total-row.row-teal { background: var(--teal-light); }
+  .total-row.row-teal .tr-label { color: var(--teal); font-weight: 600; }
+  .total-row.row-teal .tr-value { color: var(--teal); }
+
+  .total-row.row-blue { background: var(--blue-light); }
+  .total-row.row-blue .tr-label { color: var(--blue); font-weight: 600; }
+  .total-row.row-blue .tr-value { color: var(--blue); }
+
+  /* ── EDITABLE DEDUCTION ROWS ── */
+  .total-row.editable { gap: 10px; }
+  .total-row.editable .tr-label { flex-shrink: 0; }
+
+  .editable-inp-wrap {
+    display: flex;
+    align-items: center;
+    background: var(--card);
+    border: 1.5px solid var(--input-border);
+    border-radius: 8px;
+    overflow: hidden;
+    min-width: 130px;
+    position: relative;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .editable-inp-wrap:focus-within { border-color: var(--rappi-pink); box-shadow: 0 0 0 3px rgba(255,63,108,0.1); }
+  .editable-inp-wrap:focus-within .inp-ars-tag { opacity: 0.3; }
+  .total-row.row-red .editable-inp-wrap:focus-within { border-color: var(--red); box-shadow: 0 0 0 3px rgba(220,38,38,0.1); }
+  .total-row.row-orange .editable-inp-wrap:focus-within { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(234,88,12,0.1); }
+  .total-row.row-purple .editable-inp-wrap:focus-within { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+  .total-row.row-teal .editable-inp-wrap:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
+  .total-row.row-blue .editable-inp-wrap:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(2,132,199,0.1); }
+
+
+
+  .editable-inp-wrap input[type="text"] {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: none;
+    outline: none;
+    cursor: text;
+    background: transparent;
+    font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    font-weight: 700;
+    padding: 7px 4px 7px 8px;
+    color: inherit;
+    font-size: 0.82rem;
+    text-align: right;
+  }
+
+  .total-row.row-red    .editable-inp-wrap .inp-ars-tag { color: var(--red); }
+  .total-row.row-orange .editable-inp-wrap .inp-ars-tag { color: var(--orange); }
+  .total-row.row-purple .editable-inp-wrap .inp-ars-tag { color: var(--purple); }
+  .total-row.row-teal   .editable-inp-wrap .inp-ars-tag { color: var(--teal); }
+  .total-row.row-blue   .editable-inp-wrap .inp-ars-tag { color: var(--blue); }
+
+  .total-row.row-red    .editable-inp-wrap input { color: var(--red); }
+  .total-row.row-orange .editable-inp-wrap input { color: var(--orange); }
+  .total-row.row-purple .editable-inp-wrap input { color: var(--purple); }
+  .total-row.row-teal .editable-inp-wrap input   { color: var(--teal); }
+  .total-row.row-blue .editable-inp-wrap input   { color: var(--blue); }
+
+  
+.editable-inp-wrap input::placeholder { font-weight: 700; font-size: 0.75rem; }
+.total-row.row-red .editable-inp-wrap input::placeholder { color: var(--red); }
+.total-row.row-orange .editable-inp-wrap input::placeholder { color: var(--orange); }
+.total-row.row-purple .editable-inp-wrap input::placeholder { color: var(--purple); }
+.total-row.row-blue .editable-inp-wrap input::placeholder { color: var(--blue); }
+
+
+  /* ── TOGGLE MODO OSCURO ── */
+  .dark-toggle-btn {
+    background: none;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--sub);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .dark-toggle-btn:active { opacity: 0.7; }
+
+  /* Clase forzada — anula la preferencia del sistema */
+  body.dark-forced {
+    --bg: #0f0f0f; --card: #1a1a1a; --border: #2a2a2a;
+    --text: #f0f0f0; --sub: #a0a0a8; --muted: #606068;
+    --input-bg: #1f1f1f; --input-border: #333340;
+    --rappi-pink-light: #2a0d18; --green-light: #0a1f12;
+    --green-border: #1a5a30; --amber-light: #1f1800;
+    --blue-light: #071628; --red-light: #250707;
+    --orange-light: #1f0e00; --purple-light: #130a26;
+    --purple: #a78bfa; --purple-light-border: #3b1f6a;
+    --teal-light: #041614; --day-bg: #0e1020; --night-bg: #130e20;
+    --day-tag-bg: #2a1f00; --day-tag-color: #e0a030;
+    --night-tag-bg: #1a1030; --night-tag-color: #a07ae0;
+  }
+  body.dark-forced .row-propina { background: #1a1030 !important; }
+  body.dark-forced header,
+  body.dark-forced .tabs { background: #111; }
+  body.dark-forced .week-select-wrap select { background: #1f1f1f; color: #f0f0f0; }
+  body.dark-forced .inp-wrap { background: #1f1f1f; }
+  body.dark-forced .inp-wrap input[type="text"] { color: #f0f0f0; }
+  body.dark-forced .editable-inp-wrap { background: #1f1f1f; }
+  body.dark-forced .total-row { background: #1f1f1f; }
+  body.dark-forced .total-row.row-grand { background: #2a0d18; }
+  body.dark-forced .stats-accordion-header { background: #1a1a1a; }
+  body.dark-forced #toast { background: #e0e0e0; color: #111; }
+  body.dark-forced #install-banner { background: #1a1a1a; border-top-color: #2a2a2a; }
+  body.dark-forced .nav-btn { background: #1f1f1f; border-color: #333340; color: #f0f0f0; }
+  body.dark-forced .day-tab { background: #1a1a1a; border-color: #2a2a2a; }
+  body.dark-forced .note { background: #1f1800; border-color: #3a3000; color: #e0a030; }
+  body.dark-forced .tr-value { color: var(--text) !important; }
+  body.dark-forced .hist-row .hv { color: var(--text) !important; }
+  body.dark-forced .stats-row-val { color: var(--text) !important; }
+  body.dark-forced .hist-row.hrow-grand .hv { color: #ff8fab !important; }
+  body.dark-forced .hist-row.hrow-neto .hv { color: var(--green) !important; }
+
+  /* ── Configuración y Descuentos: números blancos en modo Noche ── */
+  body.dark-forced .total-row.row-teal   .tr-value,
+  body.dark-forced .total-row.row-red    .tr-value,
+  body.dark-forced .total-row.row-orange .tr-value,
+  body.dark-forced .total-row.row-purple .tr-value,
+  body.dark-forced .total-row.row-blue   .tr-value { color: #f0f0f0 !important; }
+
+  body.dark-forced .total-row.row-teal   .editable-inp-wrap input,
+  body.dark-forced .total-row.row-red    .editable-inp-wrap input,
+  body.dark-forced .total-row.row-orange .editable-inp-wrap input,
+  body.dark-forced .total-row.row-purple .editable-inp-wrap input,
+  body.dark-forced .total-row.row-blue   .editable-inp-wrap input { color: #f0f0f0 !important; }
+
+  body.dark-forced .total-row.row-teal   .editable-inp-wrap .inp-ars-tag,
+  body.dark-forced .total-row.row-red    .editable-inp-wrap .inp-ars-tag,
+  body.dark-forced .total-row.row-orange .editable-inp-wrap .inp-ars-tag,
+  body.dark-forced .total-row.row-purple .editable-inp-wrap .inp-ars-tag,
+  body.dark-forced .total-row.row-blue   .editable-inp-wrap .inp-ars-tag { color: #f0f0f0 !important; }
+
+  body.dark-forced .total-row.row-red    .editable-inp-wrap input::placeholder,
+  body.dark-forced .total-row.row-orange .editable-inp-wrap input::placeholder,
+  body.dark-forced .total-row.row-purple .editable-inp-wrap input::placeholder,
+  body.dark-forced .total-row.row-blue   .editable-inp-wrap input::placeholder { color: rgba(240,240,240,0.5); }
+
+  /* Forzar modo claro aunque el sistema esté en oscuro */
+  body.light-forced {
+    --bg: #f2f3f7; --card: #ffffff; --border: #e5e7ef;
+    --text: #1a1d27; --sub: #6b7280; --muted: #9ca3af;
+    --input-bg: #f8f9fc; --input-border: #dde1ea;
+    --rappi-pink-light: #fff0f3; --green-light: #e6f7ef;
+    --green-border: #86efac; --amber-light: #fffbeb;
+    --blue-light: #e0f2fe; --red-light: #fef2f2;
+    --orange-light: #fff7ed; --purple-light: #f5f3ff;
+    --purple: #7c3aed; --purple-light-border: #e9d5ff;
+    --teal-light: #f0fdfa; --day-bg: #f0f4ff; --night-bg: #faf5ff;
+    --day-tag-bg: #fef3c7; --day-tag-color: #b45309;
+    --night-tag-bg: #ede9fe; --night-tag-color: #6d28d9;
+  }
+  body.light-forced .row-propina { background: #fdf4ff !important; }
+  body.light-forced header,
+  body.light-forced .tabs { background: #fff; }
+  body.light-forced .inp-wrap { background: #fff; }
+  body.light-forced .editable-inp-wrap { background: #fff; }
+  body.light-forced .total-row { background: #f8f9fc; }
+  body.light-forced .week-select-wrap select { background: #f8f9fc; color: #1a1d27; }
+  .diff-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+
+  .diff-card .d-title {
+    font-size: 0.62rem;
+    color: var(--sub);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 3px;
+  }
+
+  .diff-card .d-value {
+    font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 1.5rem;
+    font-weight: 800;
+  }
+
+  .diff-card .d-note {
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+
+  .diff-pos { color: var(--green); }
+  .diff-neg { color: var(--red); }
+  .diff-zer { color: var(--muted); }
+
+  /* ── ACTIONS ── */
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .actions button {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 13px 10px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .actions button:active { transform: scale(0.97); }
+  .btn-save   { background: var(--rappi-pink); color: #fff; grid-column: 1 / -1; }
+  .btn-copy   { background: #0284c7; color: #fff; }
+  .btn-clear  { background: #e53935; color: #fff; }
+  .btn-export { background: #059669; color: #fff; }
+  .btn-import { background: #7c3aed; color: #fff; }
+  body.dark-forced .btn-copy   { background: #0369a1; color: #fff; }
+  body.dark-forced .btn-clear  { background: #c62828; color: #fff; }
+  body.dark-forced .btn-export { background: #047857; color: #fff; }
+  body.dark-forced .btn-import { background: #6d28d9; color: #fff; }
+
+  /* ── HISTORIAL ── */
+  .historial-empty {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--muted);
+  }
+
+  .historial-empty .h-icon { font-size: 2.5rem; margin-bottom: 10px; }
+  .historial-empty p { font-size: 0.82rem; line-height: 1.6; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--text);
+    color: #fff;
+    padding: 11px 22px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+    z-index: 999;
+    white-space: nowrap;
+  }
+
+  #toast.show { transform: translateX(-50%) translateY(0); }
+
+  .note {
+    background: var(--amber-light);
+    border: 1px solid #fcd34d;
+    border-radius: 10px;
+    padding: 6px 8px;
+    font-size: 0.7rem;
+    color: var(--amber);
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+
+  /* ── MONDAY BADGE ── */
+  .monday-badge {
+    display: inline-block;
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 0.52rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+    letter-spacing: 0.4px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  /* ── HISTORIAL CARDS ── */
+  .hist-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: box-shadow 0.15s;
+  }
+  .hist-card:active { opacity: 0.85; }
+  .hist-card-header {
+    background: linear-gradient(135deg, var(--rappi-pink) 0%, #c2185b 100%);
+    padding: 11px 14px;
+  }
+  .hist-card-header .hc-week {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: #fff;
+  }
+  .hist-card-header .hc-dates {
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.75);
+    margin-top: 1px;
+  }
+  .hist-card-body {
+    padding: 11px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .hist-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+  }
+  .hist-row .hl { color: var(--sub); }
+  .hist-row .hv {
+    font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    font-weight: 700;
+    color: var(--text);
+    font-size: 0.8rem;
+  }
+  .hist-row.hrow-grand .hv { color: var(--rappi-pink-dark); }
+  .hist-row.hrow-neto .hv  { color: var(--green); }
+  .hist-saved {
+    font-size: 0.6rem;
+    color: var(--muted);
+    text-align: right;
+    padding: 0 14px 10px;
+  }
+  .hist-detail {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .hist-detail-header {
+    background: linear-gradient(135deg, var(--rappi-pink) 0%, #c2185b 100%);
+    padding: 11px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .hist-detail-header span { color: #fff; font-weight: 800; font-size: 0.88rem; }
+  .hist-back-btn {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .hist-section {
+    padding: 10px 14px;
+    border-top: 1px solid var(--border);
+  }
+  .hist-section-title {
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 7px;
+  }
+  .hist-day-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    padding: 3px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .hist-day-row:last-child { border: none; }
+  .hist-day-row .hdl { color: var(--sub); font-weight: 600; }
+  .hist-day-row .hdv {
+    font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.77rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  /* ── ESTADÍSTICAS ── */
+  .stats-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .stats-header {
+    background: linear-gradient(135deg, var(--rappi-pink) 0%, #c2185b 100%);
+    padding: 12px 16px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: #fff;
+  }
+  .stats-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 6px;
+    gap: 8px;
+  }
+  .stats-row:last-child { margin-bottom: 0; }
+  .stats-row-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+  .stats-row-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.88rem; flex-shrink: 0; }
+  .stats-row-title { font-size: 0.78rem; font-weight: 700; color: var(--text); }
+  .stats-row-sub   { font-size: 0.62rem; color: var(--muted); margin-top: 1px; }
+  .stats-row-val   { font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace; font-size: 0.82rem; font-weight: 800; color: var(--text); white-space: nowrap; flex-shrink: 0; text-align: right; }
+  .stats-row-val.green { color: var(--green); }
+  .stats-row-val.pink  { color: var(--rappi-pink-dark); }
+
+  .top10-item {
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+  }
+  .top10-item:last-child { border-bottom: none; }
+  .top10-rank-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .top10-badge { background: var(--rappi-pink); color: #fff; font-size: 0.65rem; font-weight: 800; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .top10-week  { font-size: 0.78rem; font-weight: 700; color: var(--text); flex: 1; }
+  .top10-total { font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace; font-size: 0.82rem; font-weight: 800; color: var(--rappi-pink-dark); white-space: nowrap; }
+  .top10-neto-row { display: flex; align-items: center; justify-content: space-between; margin-top: 5px; background: var(--green-light); border-radius: 8px; padding: 5px 10px; }
+  .top10-neto-lbl { font-size: 0.65rem; font-weight: 700; color: var(--green); }
+  .top10-neto-val { font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace; font-size: 0.72rem; font-weight: 800; color: var(--green); }
+
+  .dist-toggle { display: flex; align-items: center; justify-content: space-between; padding: 11px 14px; cursor: pointer; border-bottom: 1px solid var(--border); user-select: none; }
+  .dist-toggle:last-child { border: none; }
+  .dist-toggle-lbl { font-size: 0.78rem; font-weight: 700; color: var(--text); }
+  .dist-toggle-arr { font-size: 0.7rem; color: var(--muted); transition: transform 0.2s; }
+  .dist-toggle-arr.open { transform: rotate(90deg); }
+  .dist-detail { display: none; padding: 0 14px 12px; border-bottom: 1px solid var(--border); }
+  .dist-detail.open { display: block; }
+  .dist-detail:last-child { border: none; }
+  .dist-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 10px; margin-bottom: 5px; }
+  .dist-item:last-child { border: none; }
+  .dist-item-icon { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0; }
+  .dist-item-name { font-size: 0.75rem; font-weight: 600; color: var(--text); flex: 1; }
+  .dist-item-pct  { font-size: 0.72rem; font-weight: 800; width: 44px; text-align: right; }
+  .dist-item-val  { font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace; font-size: 0.72rem; font-weight: 700; color: var(--text); white-space: nowrap; min-width: 95px; text-align: right; }
+  .dist-total-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 10px; margin-top: 2px; font-weight: 800; }
+  .dist-total-lbl { font-size: 0.78rem; font-weight: 800; color: var(--rappi-pink-dark); }
+  .dist-total-pct { font-size: 0.78rem; font-weight: 800; color: var(--rappi-pink-dark); }
+  .dist-total-val { font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace; font-size: 0.82rem; font-weight: 800; color: var(--rappi-pink-dark); }
+  .ars-label {
+    font-size: 0.58em;
+    font-weight: 700;
+    opacity: 1;
+    margin-left: 4px;
+    vertical-align: middle;
+    letter-spacing: 0.3px;
+  }
+  /* Inputs: placeholder keeps ARS left for clarity */
+
+</style>
+
+<style>
+.hist-expand-header{cursor:pointer;}
+.hist-expand-content{display:none;padding-top:6px}
+.hist-expand-content.open{display:block}
+.hist-expand-header{user-select:none;}
+</style>
+
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');</script>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>Mi Semana 🛵</h1>
+    <p>Registro delivery · 2026</p>
+  </div>
+  <div style="display:flex;align-items:center;gap:6px;">
+    <button class="dark-toggle-btn" id="darkToggleBtn" onclick="toggleDarkMode()">🌙 Noche</button>
+    <button class="badge-pedidosya">PedidosYa</button>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="registro" onclick="switchTab('registro', this)">
+    <span class="tab-icon">📋</span> Registro
+  </button>
+  <button class="tab-btn" data-tab="historial" onclick="switchTab('historial', this)">
+    <span class="tab-icon">📅</span> Historial
+  </button>
+  <button class="tab-btn" data-tab="estadisticas" onclick="switchTab('estadisticas', this)">
+    <span class="tab-icon">📊</span> Estadísticas
+  </button>
+</div>
+
+<!-- ══ REGISTRO ══ -->
+<div id="tab-registro" class="tab-panel active">
+
+  <!-- Week picker -->
+  <div class="week-picker-card">
+    <div class="week-picker-label" id="weekYearLabel">Semana del año 2026</div>
+    <div class="week-nav-row">
+      <button class="nav-btn" onclick="navWeek(-1)">← Anterior</button>
+      <div class="week-select-wrap">
+        <select id="weekSelect" onchange="onWeekSelect()"></select>
+      </div>
+      <button class="nav-btn" onclick="navWeek(1)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- Day tabs -->
+  <div class="day-tabs" id="dayTabs"></div>
+
+  <!-- Active day card -->
+  <div id="activeDayCard"></div>
+
+  <!-- Note -->
+  <div class="note">
+    ⚠️ El efectivo recolectado se descuenta del neto porque ya lo cobraste en mano como adelanto. PedidosYa te transferirá solo la diferencia.
+  </div>
+
+  <!-- Totals -->
+  <div class="totals-card">
+    <div class="totals-card-header" onclick="toggleTotals()" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;">📊 Totales de la Semana <span id="totalsArrow">▶</span></div>
+    <div class="totals-rows" id="totalsContent" style="display:none;">
+
+      <div class="total-row">
+        <span class="tr-label">🏍 Base total</span>
+        <span class="tr-value" id="tot-base">0,00 <span class="ars-label">ARS</span></span>
+      </div>
+      <div class="total-row">
+        <span class="tr-label">👥 Adic. Grupo total</span>
+        <span class="tr-value" id="tot-grupo">0,00 <span class="ars-label">ARS</span></span>
+      </div>
+      <div class="total-row row-teal">
+        <span class="tr-label">🏅 Logros total</span>
+        <span class="tr-value" id="tot-logros">0,00 <span class="ars-label">ARS</span></span>
+      </div>
+      <div class="total-row row-efe">
+        <span class="tr-label">💵 Efectivo Recolectado <span style="font-size:0.6rem;opacity:0.7">(Lun–Lun)</span></span>
+        <span class="tr-value" id="tot-efectivo">0,00 <span class="ars-label">ARS</span></span>
+      </div>
+      <div class="total-row row-grand">
+        <span class="tr-label">🏆 Total Generado</span>
+        <span class="tr-value" id="tot-total">0,00 <span class="ars-label">ARS</span></span>
+      </div>
+
+      <!-- Propina: transferencia separada de PedidosYa -->
+      <div class="total-row row-propina" style="border-top:2px dashed var(--purple-light-border);margin-top:4px;">
+        <span class="tr-label" style="color:var(--purple);">
+          🎁 Propina
+        </span>
+        <span class="tr-value" id="tot-propina" style="color:var(--purple);">0,00 <span class="ars-label">ARS</span></span>
+      </div>
+
+      
+<div class="totals-sep">⚙️ Configuración</div>
+
+<div class="total-row row-teal editable">
+  <span class="tr-label">🟡 Retención habitual (%)</span>
+  <div class="editable-inp-wrap">
+    <input type="text" inputmode="decimal" id="inp-retencion" placeholder="4,6" autocomplete="off">
+  </div>
+</div>
+
+<div class="total-row row-teal">
+  <span class="tr-label">🧾 Retención calculada</span>
+  <span class="tr-value" id="tot-retencion">0,00 <span class="ars-label">ARS</span></span>
+</div>
+
+<div class="totals-sep">Descuentos semanales</div>
+
+
+      <div class="total-row row-red editable">
+        <span class="tr-label">🔴 Gestorando</span>
+        <div class="editable-inp-wrap" id="wrap-gestorando">
+          <input type="text" inputmode="decimal" id="inp-gestorando" placeholder="0,00" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="total-row row-orange editable">
+        <span class="tr-label">🟠 Seguro</span>
+        <div class="editable-inp-wrap" id="wrap-seguro">
+          <input type="text" inputmode="decimal" id="inp-seguro" placeholder="0,00" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="total-row row-purple editable">
+        <span class="tr-label">🟣 Pedidos ya crédito</span>
+        <div class="editable-inp-wrap" id="wrap-pedidosya">
+          <input type="text" inputmode="decimal" id="inp-pedidosya" placeholder="0,00" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="total-row row-blue editable">
+        <span class="tr-label">🔵 Ajustes</span>
+        <div class="editable-inp-wrap" id="wrap-ajustes">
+          <input type="text" inputmode="decimal" id="inp-ajustes" placeholder="0,00" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="totals-sep">Resultado final</div>
+
+      <div class="total-row row-grand" style="border: 2px solid var(--rappi-pink);">
+        <span class="tr-label">💰 Neto a transferir</span>
+        <span class="tr-value" id="tot-neto">0,00 <span class="ars-label">ARS</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Deuda arrastrada de semana anterior -->
+  <div id="deuda-anterior-block" style="display:none;margin-bottom:10px;background:#fff3cd;border:2px solid #f59e0b;border-radius:14px;padding:13px 15px;">
+    <div style="font-size:0.72rem;font-weight:800;color:#92400e;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">⚠️ Deuda de semana anterior</div>
+    <div style="font-size:0.8rem;color:#78350f;line-height:1.45;margin-bottom:8px;">
+      La semana pasada cobraste más efectivo del que generaste. PedidosYa descontará este monto de tu próxima transferencia.
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:0.75rem;font-weight:700;color:#92400e;">Le debés a PedidosYa:</span>
+      <span id="deuda-anterior-val" style="font-family:'SF Mono',SFMono-Regular,Consolas,monospace;font-size:0.92rem;font-weight:900;color:#dc2626;"></span>
+    </div>
+  </div>
+
+  <!-- Diff -->
+  <div class="diff-card">
+    <div class="d-title">Transferencia estimada de PedidosYa</div>
+    <div class="d-value diff-zer" id="diferencia">0,00 <span class="ars-label">ARS</span></div>
+    <div class="d-note" id="diff-note">Ingresá tus datos para ver la transferencia estimada.</div>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions">
+    <button class="btn-save"   onclick="guardar()">💾 Guardar semana</button>
+    <button class="btn-copy"   onclick="exportarTexto()">📋 Copiar resumen</button>
+    <button class="btn-clear"  onclick="limpiar()">🗑 Limpiar</button>
+    <button class="btn-export" onclick="exportarDatos()">⬇️ Exportar datos</button>
+    <button class="btn-import" onclick="document.getElementById('inp-import').click()">⬆️ Importar datos</button>
+  </div>
+  <input type="file" id="inp-import" accept=".json" style="display:none" onchange="importarDatos(this)">
+
+</div>
+
+
+<!-- ══ ESTADÍSTICAS ══ -->
+<div id="tab-estadisticas" class="tab-panel"></div>
+
+<!-- ══ HISTORIAL ══ -->
+<div id="tab-historial" class="tab-panel">
+  <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+    <button onclick="limpiarHistorial()" style="
+      background:#fee2e2;color:#dc2626;border:none;border-radius:10px;
+      padding:8px 14px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:0.75rem;
+      font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;
+    ">🗑 Limpiar historial</button>
+  </div>
+  <div id="historial-list"></div>
+</div>
+
+<div id="toast">✓ Listo</div>
+
+<script>
+// ── Constants ─────────────────────────────────────────────────
+const DAY_NAMES   = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+const DAY_ABBR    = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+const SHIFTS = [
+  { key: 'DIA',   label: 'Día',   cls: 'dia',   tagCls: 'tag-dia'   },
+  { key: 'NOCHE', label: 'Noche', cls: 'noche', tagCls: 'tag-noche' }
+];
+const FIELDS = [
+  { key: 'base',     label: 'Base' },
+  { key: 'propina',  label: 'Propina' },
+  { key: 'grupo',    label: 'Adic. Grupo' },
+  { key: 'logros',   label: '🏅 Logros', extraCls: 'logros' },
+  { key: 'efectivo', label: '💵 Ef. Recolectado', cls: 'efectivo' }
+];
+const DEDUCTIONS = ['gestorando','seguro','pedidosya','ajustes','retencion'];
+
+let currentWeekIndex = 0;
+let currentDayIndex  = 0;
+let allWeeks = [];
+
+// ── Moneda según ubicación ───────────────────────────────────────
+// Por defecto ARS (Argentina). Si se detecta Chile, cambia a CLP.
+// CLP no usa decimales en uso cotidiano, así que se ajusta también
+// la cantidad de decimales mostrados.
+let CURRENCY = { code: 'ARS', decimals: 2 };
+
+function aplicarMonedaPorPais(countryCode) {
+  if (countryCode === 'CL') {
+    CURRENCY = { code: 'CLP', decimals: 0 };
+  } else {
+    CURRENCY = { code: 'ARS', decimals: 2 };
+  }
+}
+
+(function detectarPaisMoneda() {
+  try {
+    // 1) Intento rápido y sin permisos: zona horaria del dispositivo.
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+    if (tz === 'America/Santiago') aplicarMonedaPorPais('CL');
+
+    // 2) Si el navegador da geolocalización real, confirmar/corregir con eso.
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        // Chile continental aprox: lat -17.5 a -56, lon -75 a -66
+        const { latitude: lat, longitude: lon } = pos.coords;
+        const enChile = lat <= -17 && lat >= -56 && lon <= -66 && lon >= -76;
+        aplicarMonedaPorPais(enChile ? 'CL' : 'AR');
+        if (typeof calcTotalsData === 'function') calcTotalsData();
+      }, function(){ /* sin permiso: nos quedamos con la detección por huso horario */ }, { timeout: 4000 });
+    }
+  } catch(e) { /* si algo falla, queda ARS por defecto */ }
+})();
+
+// ── Formatting ────────────────────────────────────────────────
+// fmtARS — texto plano "1.234,56 ARS" (o CLP), para lógica interna
+function fmtARS(n) {
+  const dec = CURRENCY.decimals;
+  if (n === 0 || isNaN(n)) return (0).toFixed(dec).replace('.', ',') + ' ' + CURRENCY.code;
+  const abs = Math.abs(n);
+  const parts = abs.toFixed(dec).split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const num = parts.length > 1 ? parts[0] + ',' + parts[1] : parts[0];
+  return (n < 0 ? '-' : '') + num + ' ' + CURRENCY.code;
+}
+
+// fmtNum — solo el número formateado, para mostrar dentro de inputs
+function fmtNum(n) {
+  const dec = CURRENCY.decimals;
+  if (n === 0 || isNaN(n)) return '';
+  const abs = Math.abs(n);
+  const parts = abs.toFixed(dec).split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return (n < 0 ? '-' : '') + (parts.length > 1 ? parts[0] + ',' + parts[1] : parts[0]);
+}
+
+// fmtARShtml — HTML con número grande y código de moneda pequeño a la derecha
+function fmtARShtml(n) {
+  const dec = CURRENCY.decimals;
+  if (n === 0 || isNaN(n)) return (0).toFixed(dec).replace('.', ',') + ` <span class="ars-label">${CURRENCY.code}</span>`;
+  const abs = Math.abs(n);
+  const parts = abs.toFixed(dec).split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const num = (n < 0 ? '-' : '') + (parts.length > 1 ? parts[0] + ',' + parts[1] : parts[0]);
+  return `${num} <span class="ars-label">${CURRENCY.code}</span>`;
+}
+
+// Parse input: accepts "$1234", "ARS 1234", "1,234.56", "1.234,56", "1234"
+function parseVal(str) {
+  if (!str) return 0;
+  // Remove currency prefixes (ARS, CLP, $) and spaces
+  let s = str.replace(/ARS\s*/gi, '').replace(/CLP\s*/gi, '').replace(/\$\s*/g, '').trim();
+  if (!s) return 0;
+  const lastComma = s.lastIndexOf(',');
+  const lastDot   = s.lastIndexOf('.');
+  if (lastComma > lastDot) {
+    // comma is decimal separator → remove dots (thousands), swap comma to dot
+    s = s.replace(/\./g, '').replace(',', '.');
+  } else {
+    // dot is decimal separator → remove commas (thousands)
+    s = s.replace(/,/g, '');
+  }
+  return parseFloat(s) || 0;
+}
+
+// ── Week generation ───────────────────────────────────────────
+function generateWeeks() {
+  // Mondays from Jan 1, 2026 to Dec 31, 2030
+  const start = new Date(2026, 0, 5); // first Monday of 2026
+  const end   = new Date(2030, 11, 31);
+  const weeks = [];
+  let d = new Date(start);
+  while (d <= end) {
+    weeks.push(new Date(d));
+    d.setDate(d.getDate() + 7);
+  }
+  return weeks;
+}
+
+function getWeekDates(monday) {
+  const dates = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(d.getDate() + i);
+    dates.push(d);
+  }
+  return dates;
+}
+
+function fmtDate(d, short) {
+  const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  if (short) return `${DAY_ABBR[((d.getDay()+6)%7)]}, ${String(d.getDate()).padStart(2,'0')} ${months[d.getMonth()]}`;
+  return `${d.getDate()} ${months[d.getMonth()]}`;
+}
+
+function getWeekLabel(monday) {
+  // Calculate ISO week number
+  const jan4 = new Date(monday.getFullYear(), 0, 4);
+  const startOfWeek1 = new Date(jan4);
+  startOfWeek1.setDate(jan4.getDate() - ((jan4.getDay() + 6) % 7));
+  const weekNum = Math.round((monday - startOfWeek1) / (7 * 86400000)) + 1;
+  const end = new Date(monday);
+  end.setDate(end.getDate() + 6);
+  return `Sem ${weekNum} · ${fmtDate(monday, false)} – ${fmtDate(end, false)}`;
+}
+
+function getCurrentMondayIndex() {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  let best = 0;
+  for (let i = 0; i < allWeeks.length; i++) {
+    if (allWeeks[i] <= today) best = i;
+    else break;
+  }
+  return best;
+}
+
+// ── Build week select ─────────────────────────────────────────
+function buildWeekSelect() {
+  const sel = document.getElementById('weekSelect');
+  sel.innerHTML = '';
+  let currentYear = null;
+  let group = null;
+  allWeeks.forEach((mon, i) => {
+    const yr = mon.getFullYear();
+    if (yr !== currentYear) {
+      currentYear = yr;
+      group = document.createElement('optgroup');
+      group.label = String(yr);
+      sel.appendChild(group);
+    }
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = getWeekLabel(mon);
+    group.appendChild(opt);
+  });
+  sel.value = currentWeekIndex;
+}
+
+function onWeekSelect() {
+  currentWeekIndex = parseInt(document.getElementById('weekSelect').value);
+  currentDayIndex = 0;
+  const yr = allWeeks[currentWeekIndex].getFullYear();
+  document.getElementById('weekYearLabel').textContent = `Semana del año ${yr}`;
+  const raw = localStorage.getItem(`delivery_v4_w${currentWeekIndex}`);
+  if (raw) {
+    try { const d = JSON.parse(raw); if (d.sessionData) sessionData = {...d.sessionData}; } catch(e) {}
+  } else {
+    sessionData = {};
+  }
+  cargarDescuentosDeSemana(currentWeekIndex);
+  renderDay();
+}
+
+function navWeek(dir) {
+  const next = currentWeekIndex + dir;
+  if (next < 0 || next >= allWeeks.length) return;
+  currentWeekIndex = next;
+  document.getElementById('weekSelect').value = currentWeekIndex;
+  currentDayIndex = 0;
+  const yr = allWeeks[currentWeekIndex].getFullYear();
+  document.getElementById('weekYearLabel').textContent = `Semana del año ${yr}`;
+  const raw = localStorage.getItem(`delivery_v4_w${currentWeekIndex}`);
+  if (raw) {
+    try { const d = JSON.parse(raw); if (d.sessionData) sessionData = {...d.sessionData}; } catch(e) {}
+  } else {
+    sessionData = {};
+  }
+  cargarDescuentosDeSemana(currentWeekIndex);
+  renderDay();
+}
+
+// ── Day tabs ──────────────────────────────────────────────────
+function buildDayTabs() {
+  const container = document.getElementById('dayTabs');
+  container.innerHTML = '';
+  const dates = getWeekDates(allWeeks[currentWeekIndex]);
+  DAY_ABBR.forEach((abbr, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'day-tab' + (i === currentDayIndex ? ' active' : '');
+    btn.innerHTML = `<span class="dt-abbr">${abbr}</span><span class="dt-date">${fmtDate(dates[i], true)}</span>`;
+    btn.onclick = () => { currentDayIndex = i; renderDay(); };
+    container.appendChild(btn);
+  });
+}
+
+// ── Active day card ───────────────────────────────────────────
+function buildDayCard() {
+  const day = DAY_NAMES[currentDayIndex];
+  const dates = getWeekDates(allWeeks[currentWeekIndex]);
+  const dateStr = fmtDate(dates[currentDayIndex], true);
+  const card = document.getElementById('activeDayCard');
+  card.innerHTML = '';
+
+  const dayCard = document.createElement('div');
+  dayCard.className = 'day-card';
+
+  // Header
+  const hdr = document.createElement('div');
+  hdr.className = 'day-card-header';
+  hdr.innerHTML = `
+    <div class="dch-left">
+      <div class="dch-name">${day}</div>
+      <div class="dch-date">${dateStr.charAt(0).toUpperCase() + dateStr.slice(1)}</div>
+    </div>
+    <div class="dch-total" id="dch-total-${day}">0,00 <span class="ars-label">ARS</span></div>`;
+  dayCard.appendChild(hdr);
+
+  SHIFTS.forEach(shift => {
+    const block = document.createElement('div');
+    block.className = `shift-block ${shift.cls}`;
+
+    const stitle = document.createElement('div');
+    stitle.className = 'shift-title';
+    stitle.innerHTML = `<span class="tag ${shift.tagCls}">${shift.label}</span><span class="shift-subtotal" id="sub-${day}-${shift.key}">0,00 <span class="ars-label">ARS</span></span>`;
+    block.appendChild(stitle);
+
+    if (shift.key === 'NOCHE') {
+      const note = document.createElement('div');
+      note.className = 'noche-acum-note';
+      note.textContent = '↑ Ingresá el acumulado de PedidosYa · El resultado real aparece abajo de cada campo';
+      block.appendChild(note);
+    }
+
+    const grid = document.createElement('div');
+    grid.className = 'inputs-grid';
+
+    FIELDS.forEach(field => {
+      const wrap = document.createElement('div');
+      wrap.className = 'field-wrap' + (field.cls ? ` ${field.cls}` : '');
+
+      const lbl = document.createElement('label');
+      lbl.textContent = field.label;
+      wrap.appendChild(lbl);
+
+      const inpWrap = document.createElement('div');
+      inpWrap.className = 'inp-wrap';
+
+      const inp = document.createElement('input');
+      inp.type = 'text';
+      inp.inputMode = 'decimal';
+      inp.placeholder = '0,00';
+      inp.dataset.day   = day;
+      inp.dataset.shift = shift.key;
+      inp.dataset.field = field.key;
+      inp.autocomplete = 'off';
+
+      // Restaurar valor guardado
+      const storageKey = `${currentWeekIndex}_${day}_${shift.key}_${field.key}`;
+      const saved = sessionData[storageKey];
+      if (saved && saved !== '0') {
+        if (shift.key === 'NOCHE') {
+          // Mostrar resultado real al cargar
+          const acum = parseFloat(saved) || 0;
+          const dia  = parseFloat(sessionData[`${currentWeekIndex}_${day}_DIA_${field.key}`] || '0') || 0;
+          const real = Math.abs(acum - dia);
+          if (real > 0) inp.value = fmtNum(real);
+        } else {
+          inp.value = fmtNum(parseFloat(saved));
+        }
+      }
+
+      inp.addEventListener('input', () => {
+        const v = parseVal(inp.value);
+        sessionData[`${currentWeekIndex}_${day}_${shift.key}_${field.key}`] = String(v);
+        if (shift.key === 'DIA') updateAllNocheDisplays(day);
+        calcTotals();
+      });
+      inp.addEventListener('blur', () => {
+        const v = parseVal(inp.value);
+        sessionData[`${currentWeekIndex}_${day}_${shift.key}_${field.key}`] = String(v);
+        if (shift.key === 'NOCHE') {
+          const real = getInpVal(day, 'NOCHE', field.key);
+          inp.value = real !== 0 ? fmtNum(real) : '';
+          updateNocheDisplay(day, field.key);
+        } else {
+          inp.value = v !== 0 ? fmtNum(v) : '';
+          updateAllNocheDisplays(day);
+        }
+        calcTotalsAndSync();
+      });
+      inp.addEventListener('focus', () => {
+        if (shift.key === 'NOCHE') {
+          // Al editar, mostrar el acumulado original (lo que ingresó el usuario)
+          const acum = parseFloat(sessionData[`${currentWeekIndex}_${day}_NOCHE_${field.key}`] || '0') || 0;
+          inp.value = acum !== 0 ? String(acum) : '';
+        } else {
+          const v = parseVal(inp.value);
+          inp.value = v !== 0 ? String(v) : '';
+        }
+        // Seleccionar todo al enfocar: un toque a ✕ borra todo el número
+        setTimeout(() => inp.select(), 0);
+      });
+
+      inpWrap.appendChild(inp);
+      // ARS tag a la derecha del input
+      const arsTag = document.createElement('span');
+      arsTag.className = 'inp-ars-tag';
+      arsTag.textContent = CURRENCY.code;
+      inpWrap.appendChild(arsTag);
+      wrap.appendChild(inpWrap);
+      grid.appendChild(wrap);
+    });
+
+    block.appendChild(grid);
+    dayCard.appendChild(block);
+  });
+
+  // Ef. del día row
+  const cashRow = document.createElement('div');
+  cashRow.className = 'daily-cash-row';
+  cashRow.innerHTML = `
+    <div class="daily-cash-label">Ef. Recolectado del Día</div>
+    <div class="daily-cash-display" id="daily-cash-${day}">0,00 <span class="ars-label">ARS</span></div>
+  `;
+  dayCard.appendChild(cashRow);
+
+  card.appendChild(dayCard);
+  calcTotals();
+}
+
+function renderDay() {
+  buildDayTabs();
+  buildDayCard();
+}
+
+// ── Session data ──────────────────────────────────────────────
+let sessionData = {};
+
+function updateNocheDisplay(day, field) {
+  const inp = document.querySelector(`input[data-day="${day}"][data-shift="NOCHE"][data-field="${field}"]`);
+  if (!inp || document.activeElement === inp) return;
+  const real = getInpVal(day, 'NOCHE', field);
+  inp.value = real !== 0 ? fmtNum(real) : '';
+}
+
+function updateAllNocheDisplays(day) {
+  FIELDS.forEach(f => updateNocheDisplay(day, f.key));
+}
+
+function getInpVal(day, shift, field) {
+  if (shift === 'NOCHE') {
+    const acum = parseFloat(sessionData[`${currentWeekIndex}_${day}_NOCHE_${field}`] || '0') || 0;
+    const dia  = parseFloat(sessionData[`${currentWeekIndex}_${day}_DIA_${field}`] || '0') || 0;
+
+    if (
+      field === 'propina' ||
+      field === 'base' ||
+      field === 'grupo' ||
+      field === 'logros' ||
+      field === 'efectivo'
+    ) {
+      if (acum > dia) return acum - dia;
+      return acum;
+    }
+
+    if (acum <= dia) return 0;
+    return acum - dia;
+  }
+
+  const inp = document.querySelector(
+    `input[data-day="${day}"][data-shift="${shift}"][data-field="${field}"]`
+  );
+
+  if (inp) return parseVal(inp.value);
+
+  return parseFloat(
+    sessionData[`${currentWeekIndex}_${day}_${shift}_${field}`] || '0'
+  ) || 0;
+}
+
+// ── Setup deduction inputs (with dual $ / ARS support) ────────
+function setupDeductionInputs() {
+  DEDUCTIONS.forEach(id => {
+    const inp = document.getElementById(`inp-${id}`);
+    const wrap = inp.parentElement;
+    if (wrap && !wrap.querySelector('.inp-ars-tag')) {
+      const tag = document.createElement('span');
+      tag.className = 'inp-ars-tag';
+      tag.textContent = CURRENCY.code;
+      wrap.appendChild(tag);
+    }
+
+    inp.addEventListener('input', () => {
+      // Actualizar parsedVal en tiempo real para que borrar con ✕ funcione de inmediato
+      const v = parseVal(inp.value);
+      inp.dataset.parsedVal = String(v);
+      calcTotals();
+    });
+
+    inp.addEventListener('blur', () => {
+      const v = parseVal(inp.value);
+
+      if (id === 'retencion') {
+        inp.value = v !== 0 ? String(v).replace('.', ',') : '';
+      } else {
+        inp.value = v !== 0 ? fmtNum(v) : '';
+      }
+
+      inp.dataset.parsedVal = String(v);
+      calcTotalsAndSync();
+    });
+
+    inp.addEventListener('focus', () => {
+      const v = parseVal(inp.value);
+      inp.value = v !== 0 ? String(v) : '';
+      // Seleccionar todo al enfocar: un toque a ✕ borra todo el número
+      setTimeout(() => inp.select(), 0);
+    });
+  });
+}
+
+function getDeductionVal(id) {
+  const inp = document.getElementById(`inp-${id}`);
+  if (inp.value.trim() !== '') return parseVal(inp.value);
+  return parseFloat(inp.dataset.parsedVal || '0') || 0;
+}
+
+// ── Calc totals (Monday-aware) ────────────────────────────────
+// Returns totals object for use by guardar()
+function calcTotalsData() {
+  let sumBase=0, sumPropina=0, sumGrupo=0, sumLogros=0, sumEfectivo=0, sumTotal=0;
+
+  DAY_NAMES.forEach((day, dayIdx) => {
+    const isMonday = dayIdx === 0; // Lunes
+    let dayEfectivo = 0;
+    let daySum = 0;
+
+    SHIFTS.forEach(shift => {
+      let shiftSum = 0;
+      ['base','propina','grupo','logros'].forEach(field => {
+        const v = getInpVal(day, shift.key, field);
+        // Propina se muestra en el total diario pero NO en los totales semanales
+        if (field === 'base')    sumBase    += v;
+        if (field === 'propina') sumPropina += v;
+        if (field === 'grupo')   sumGrupo   += v;
+        if (field === 'logros')  sumLogros  += v;
+
+        // Total visible del día y subtotal del turno (incluye propina)
+        daySum += v;
+        shiftSum += v;
+
+        // Total semanal generado SIN propina
+        if (field !== 'propina') {
+          sumTotal += v;
+        }
+      });
+
+      const efe = getInpVal(day, shift.key, 'efectivo');
+      // Monday efectivo does NOT count for this week — it belongs to the PREVIOUS week
+      if (!isMonday) {
+        sumEfectivo += efe;
+        dayEfectivo += efe;
+      } else {
+        // Still show in daily-cash display for Lunes, but mark it
+        dayEfectivo += efe;
+      }
+
+      const subEl = document.getElementById(`sub-${day}-${shift.key}`);
+      if (subEl) subEl.innerHTML = fmtARShtml(shiftSum);
+    });
+
+    const dayEl = document.getElementById(`daytot-${day}`);
+    if (dayEl) dayEl.innerHTML = daySum > 0 ? fmtARShtml(daySum) : '';
+
+    // Update day card header total
+    const dchTotEl = document.getElementById(`dch-total-${day}`);
+    if (dchTotEl) dchTotEl.innerHTML = fmtARShtml(daySum);
+
+    const dailyCashEl = document.getElementById(`daily-cash-${day}`);
+    if (dailyCashEl) {
+      if (isMonday && dayEfectivo > 0) {
+        dailyCashEl.innerHTML = fmtARShtml(dayEfectivo) + ' ⚠️';
+        dailyCashEl.title = 'Este efectivo se suma a la semana anterior';
+      } else {
+        dailyCashEl.innerHTML = fmtARShtml(dayEfectivo);
+      }
+    }
+  });
+
+  // Also add efectivo from PREVIOUS week's next-monday = this week's Lunes efectivo
+  // pulled from the previous week's sessionData — handled at guardar() time
+  // For display, we add the PREVIOUS week's Monday-next efectivo to sumEfectivo
+  // i.e. the Lunes of THIS week belongs to the PREV week, but the Lunes of NEXT week belongs to THIS week
+  // For the running total we show current week Mon-Sun excluding Lunes efe,
+  // plus an indicator showing what the final total will include.
+  // Note: The Lunes efe of currentWeek+1 will be added at save time.
+
+  // Sumar el efectivo del Lunes de la semana SIGUIENTE (pertenece a esta semana)
+  let mondayNextEfeRT = 0;
+  const nextWeekIdxRT = currentWeekIndex + 1;
+  if (nextWeekIdxRT < allWeeks.length) {
+    SHIFTS.forEach(shift => {
+      const key = `${nextWeekIdxRT}_Lunes_${shift.key}_efectivo`;
+      mondayNextEfeRT += parseFloat(sessionData[key] || '0') || 0;
+    });
+  }
+  const sumEfectivoTotal = sumEfectivo + mondayNextEfeRT;
+
+  const gestVal = getDeductionVal('gestorando');
+  const segVal  = getDeductionVal('seguro');
+  const pyVal   = getDeductionVal('pedidosya');
+  const adjVal  = getDeductionVal('ajustes');
+
+  const retPct = getDeductionVal('retencion');
+  const baseImponible = sumBase + sumGrupo + sumLogros;
+  const retencionVal = baseImponible * (retPct/100);
+
+  const neto = baseImponible - retencionVal - gestVal - segVal - pyVal - adjVal - sumEfectivoTotal;
+
+  document.getElementById('tot-base').innerHTML = fmtARShtml(sumBase);
+  document.getElementById('tot-propina').innerHTML = fmtARShtml(sumPropina);
+  document.getElementById('tot-grupo').innerHTML = fmtARShtml(sumGrupo);
+  document.getElementById('tot-logros').innerHTML = fmtARShtml(sumLogros);
+  document.getElementById('tot-efectivo').innerHTML = fmtARShtml(sumEfectivoTotal);
+  document.getElementById('tot-total').innerHTML = fmtARShtml(sumTotal);
+  const tr=document.getElementById('tot-retencion');
+  if(tr) tr.innerHTML = fmtARShtml(retencionVal);
+  document.getElementById('tot-neto').innerHTML = fmtARShtml(neto);
+
+  // ── Deuda arrastrada de la semana anterior ──
+  let deudaAnterior = 0;
+  const prevWeekIdx = currentWeekIndex - 1;
+  if (prevWeekIdx >= 0) {
+    const hist = getHistorial();
+    const prevRec = hist.find(h => h.weekIndex === prevWeekIdx);
+    if (prevRec && prevRec.deudaArrastrada && prevRec.deudaArrastrada > 0) {
+      deudaAnterior = prevRec.deudaArrastrada;
+    }
+  }
+
+  // Tarjeta informativa: lo que PedidosYa debería transferirte
+  const transferencia = baseImponible - retencionVal - gestVal - segVal - pyVal - adjVal - sumEfectivoTotal;
+  // Neto real descontando deuda anterior
+  const transferenciaReal = transferencia - deudaAnterior;
+
+  // La deuda queda "pagada" cuando el neto de esta semana la absorbe (transferenciaReal >= 0)
+  const deudaPagada = (deudaAnterior > 0 && transferenciaReal >= 0);
+
+  // Mostrar/ocultar bloque de deuda anterior
+  const deudaBlock = document.getElementById('deuda-anterior-block');
+  const deudaValEl = document.getElementById('deuda-anterior-val');
+  if (deudaBlock && deudaValEl) {
+    if (deudaAnterior > 0 && !deudaPagada) {
+      deudaBlock.style.display = 'block';
+      deudaValEl.innerHTML = fmtARShtml(deudaAnterior);
+    } else {
+      deudaBlock.style.display = 'none';
+    }
+  }
+
+  const el = document.getElementById('diferencia');
+  el.innerHTML = fmtARShtml(Math.max(0, transferenciaReal));
+  el.className = 'd-value ' + (transferenciaReal >= 0 ? 'diff-pos' : 'diff-neg');
+
+  const noteEl = document.getElementById('diff-note');
+  if (sumTotal === 0) {
+    noteEl.textContent = 'Ingresá tus datos para ver la transferencia estimada.';
+  } else if (deudaAnterior > 0 && !deudaPagada) {
+    noteEl.textContent = `⚠️ Le debés a PedidosYa ${fmtARS(deudaAnterior)} de la semana anterior. Esta semana no recibirás transferencia hasta cubrir esa diferencia.`;
+  } else if (deudaAnterior > 0 && deudaPagada) {
+    noteEl.textContent = `✅ La deuda de ${fmtARS(deudaAnterior)} de la semana anterior quedó cubierta. PedidosYa te transferirá la diferencia.`;
+  } else if (transferencia > 0) {
+    noteEl.textContent = 'Esto es lo que PedidosYa debería transferirte esta semana.';
+  } else if (transferencia < 0) {
+    noteEl.textContent = '⚠️ Cobraste más en efectivo de lo que generaste. PedidosYa no transferirá nada y este saldo negativo pasará a la próxima semana.';
+  } else {
+    noteEl.textContent = 'El efectivo cubre exactamente lo generado. Transferencia: $0.';
+  }
+
+  return { base: sumBase, propina: sumPropina, grupo: sumGrupo, logros: sumLogros,
+           efectivo: sumEfectivoTotal, total: sumTotal, neto, deudaAnterior, deudaPagada };
+}
+
+// Patch calcTotals to call the data version
+function calcTotals() { calcTotalsData(); }
+
+// Sincronización en tiempo real: si historial o estadísticas están visibles, re-renderizar
+
+function syncMondayCashRealtime(){
+  try{
+    const hist = getHistorial();
+    const prev = hist.find(h => h.weekIndex === currentWeekIndex - 1);
+    if(!prev || !prev.totals) return;
+
+    let mondayCash = 0;
+    SHIFTS.forEach(shift=>{
+      mondayCash += parseFloat(sessionData[`${currentWeekIndex}_Lunes_${shift.key}_efectivo`] || '0') || 0;
+    });
+
+    const oldMonday = prev.mondayNextEfe || 0;
+    if(oldMonday === mondayCash) return;
+
+    prev.mondayNextEfe = mondayCash;
+
+    const efectivoBase = (prev.totals.efectivo || 0) - oldMonday;
+    prev.totals.efectivo = efectivoBase + mondayCash;
+
+    saveHistorial(hist);
+
+    if(document.getElementById('tab-historial')?.classList.contains('active')){
+      renderHistorial();
+    }
+    if(document.getElementById('tab-estadisticas')?.classList.contains('active')){
+      renderEstadisticas();
+    }
+  }catch(e){ console.error(e); }
+}
+
+
+function calcTotalsAndSync() {
+  updatePreviousWeekLive();
+  calcTotalsData();
+  const activePanel = document.querySelector('.tab-panel.active');
+  if (!activePanel) return;
+  if (activePanel.id === 'tab-historial') renderHistorial();
+  if (activePanel.id === 'tab-estadisticas') renderEstadisticas();
+}
+
+// ── Tabs ──────────────────────────────────────────────────────
+function switchTab(tabName, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(`tab-${tabName}`).classList.add('active');
+  if (tabName === 'historial') renderHistorial();
+  if (tabName === 'estadisticas') renderEstadisticas();
+}
+
+// ── Persist ───────────────────────────────────────────────────
+const HISTORIAL_KEY = 'delivery_v4_historial';
+
+function getHistorial() {
+  try {
+    const raw = localStorage.getItem(HISTORIAL_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw);
+  } catch(e) {
+    console.error('Historial corrupto, intentando backup:', e);
+    try {
+      const backup = localStorage.getItem(HISTORIAL_KEY + '_backup');
+      if (backup) {
+        const parsed = JSON.parse(backup);
+        showToast('⚠️ Se restauró el historial desde el respaldo automático');
+        return parsed;
+      }
+    } catch(e2) { console.error('Backup también corrupto:', e2); }
+    showToast('⚠️ No se pudo leer el historial. Revisá si tenés un backup exportado.');
+    return [];
+  }
+}
+
+function saveHistorial(arr) {
+  try {
+    // Respaldo del estado previo antes de sobrescribir, para poder
+    // recuperarlo si una escritura futura se corrompe.
+    const prev = localStorage.getItem(HISTORIAL_KEY);
+    if (prev) localStorage.setItem(HISTORIAL_KEY + '_backup', prev);
+    localStorage.setItem(HISTORIAL_KEY, JSON.stringify(arr));
+  } catch(e) {
+    console.error('Error guardando historial:', e);
+    showToast('⚠️ Error al guardar el historial: ' + e.message);
+  }
+}
+
+
+function updatePreviousWeekLive(){
+  try{
+    const hist = getHistorial();
+    const idxPrev = hist.findIndex(h => h.weekIndex === currentWeekIndex - 1);
+    if(idxPrev < 0) return;
+    const prev = hist[idxPrev];
+    if(!prev || !prev.totals) return;
+
+    let mondayCash = 0;
+    SHIFTS.forEach(shift=>{
+      const key = `${currentWeekIndex}_Lunes_${shift.key}_efectivo`;
+      mondayCash += parseFloat(sessionData[key] || '0') || 0;
+    });
+
+    const oldMonday = prev.mondayNextEfe || 0;
+    if(mondayCash === oldMonday) return;
+
+    prev.mondayNextEfe = mondayCash;
+    prev.totals.efectivo = (prev.totals.efectivo || 0) - oldMonday + mondayCash;
+
+    const ded = prev.deductions || {};
+    const base = (prev.totals.base||0)+(prev.totals.grupo||0)+(prev.totals.logros||0);
+    const ret = base * ((parseFloat(ded.retencion||0))/100);
+
+    // Deuda que esta semana anterior ya traía heredada (de DOS semanas atrás)
+    // Hay que seguir descontándola del neto, igual que hace guardar().
+    const deudaHeredadaPrev = prev.deudaAnterior || 0;
+
+    const netoBase =
+      base - ret
+      - (ded.gestorando||0)
+      - (ded.seguro||0)
+      - (ded.pedidosya||0)
+      - (ded.ajustes||0)
+      - (prev.totals.efectivo||0);
+
+    const netoConDeuda = netoBase - deudaHeredadaPrev;
+    const netoFinal = deudaHeredadaPrev > 0 ? netoConDeuda : netoBase;
+
+    prev.totals.neto = netoFinal;
+    prev.deudaArrastrada = netoConDeuda < 0 ? Math.abs(netoConDeuda) : 0;
+
+    // No pisar un "saldada" ya confirmado por guardar() si el recálculo en vivo
+    // todavía no llegó a cubrir la deuda (evita que el badge verde "parpadee" a rojo
+    // mientras seguís cargando datos a mitad de semana).
+    if (deudaHeredadaPrev > 0 && netoConDeuda >= 0) {
+      prev.deudaSaldada = true;
+    }
+
+    // Marcar en la semana QUE GENERÓ la deuda (dos semanas atrás) que ya fue saldada,
+    // igual que hace guardar(), para que su badge verde se actualice en vivo también.
+    const idxAbuela = hist.findIndex(h => h.weekIndex === currentWeekIndex - 2);
+    if (idxAbuela >= 0) {
+      const propiaDeudaArr = hist[idxAbuela].deudaArrastrada || 0;
+      if (propiaDeudaArr > 0 && deudaHeredadaPrev > 0 && netoConDeuda >= 0) {
+        hist[idxAbuela].deudaSaldadaEnSem = currentWeekIndex - 1;
+      } else if (propiaDeudaArr > 0 && deudaHeredadaPrev > 0 && netoConDeuda < 0) {
+        // todavía no cubierta del todo: no marcar como saldada
+        delete hist[idxAbuela].deudaSaldadaEnSem;
+      }
+    }
+
+    hist[idxPrev] = prev;
+    saveHistorial(hist);
+
+    const activePanel = document.querySelector('.tab-panel.active');
+    if(activePanel){
+      if(activePanel.id==='tab-historial') renderHistorial();
+      if(activePanel.id==='tab-estadisticas') renderEstadisticas();
+    }
+  }catch(e){ console.error(e); }
+}
+
+function guardar() {
+  // Collect current totals
+  const totals = calcTotalsData();
+  const weekLabel = getWeekLabel(allWeeks[currentWeekIndex]);
+  const monday = allWeeks[currentWeekIndex];
+  const sunday = new Date(monday); sunday.setDate(sunday.getDate() + 6);
+
+  // Collect full day detail
+  const days = {};
+  DAY_NAMES.forEach(day => {
+    days[day] = {};
+    SHIFTS.forEach(shift => {
+      days[day][shift.key] = {};
+      FIELDS.forEach(f => {
+        days[day][shift.key][f.key] = getInpVal(day, shift.key, f.key);
+      });
+    });
+  });
+
+  // Collect Monday-next efectivo (from NEXT week's Monday Lunes data if present)
+  const nextWeekIdx = currentWeekIndex + 1;
+  let mondayNextEfe = 0;
+  if (nextWeekIdx < allWeeks.length) {
+    SHIFTS.forEach(shift => {
+      const key = `${nextWeekIdx}_Lunes_${shift.key}_efectivo`;
+      mondayNextEfe += parseFloat(sessionData[key] || '0') || 0;
+    });
+  }
+
+  const deductions = {};
+  DEDUCTIONS.forEach(id => deductions[id] = getDeductionVal(id));
+
+  // Leer deuda heredada de la semana anterior
+  const histPre = getHistorial();
+  const prevRecG = histPre.find(h => h.weekIndex === currentWeekIndex - 1);
+  const deudaAnteriorGuardada = (prevRecG && prevRecG.deudaArrastrada > 0) ? prevRecG.deudaArrastrada : 0;
+
+  // Neto después de descontar la deuda anterior
+  const netoBaseActual = totals.neto || 0;
+  const netoConDeuda = netoBaseActual - deudaAnteriorGuardada;
+
+  // Si el neto con deuda sigue negativo → arrastra la diferencia a la próxima semana
+  // Si el neto con deuda cubre la deuda → la deuda queda saldada, no arrastra nada
+  const deudaArrastrada = netoConDeuda < 0 ? Math.abs(netoConDeuda) : 0;
+  const deudaSaldada = deudaAnteriorGuardada > 0 && netoConDeuda >= 0;
+
+  // El neto real que va al historial es el neto YA con la deuda descontada (cuando la cubre)
+  const netoFinal = deudaAnteriorGuardada > 0 ? netoConDeuda : netoBaseActual;
+
+  // Actualizar el record de la semana anterior: marcarla como saldada
+  if (deudaSaldada && prevRecG) {
+    const idxPrev = histPre.findIndex(h => h.weekIndex === currentWeekIndex - 1);
+    if (idxPrev >= 0) {
+      histPre[idxPrev].deudaSaldadaEnSem = currentWeekIndex;
+      histPre[idxPrev].deudaArrastrada = 0;
+      saveHistorial(histPre);
+    }
+  }
+
+  // Totales a guardar: usar netoFinal que ya descuenta la deuda
+  const totalsToSave = { ...totals, neto: netoFinal };
+
+  const record = {
+    weekIndex: currentWeekIndex,
+    weekLabel,
+    dateStart: monday.toISOString(),
+    dateEnd:   sunday.toISOString(),
+    savedAt:   new Date().toISOString(),
+    totals: totalsToSave,
+    mondayNextEfe,
+    deductions,
+    days,
+    sessionDataSnap: {...sessionData},
+    deudaArrastrada,
+    deudaAnterior: deudaAnteriorGuardada,
+    deudaSaldada
+  };
+
+  // Add/replace in historial
+  const hist = getHistorial();
+  const existIdx = hist.findIndex(h => h.weekIndex === currentWeekIndex);
+  if (existIdx >= 0) hist[existIdx] = record;
+  else hist.unshift(record);
+  // Keep sorted by weekIndex desc
+  hist.sort((a,b) => b.weekIndex - a.weekIndex);
+  saveHistorial(hist);
+
+  // Also save current session for auto-restore
+  try {
+    const snap = { weekIndex: currentWeekIndex, sessionData: {...sessionData} };
+    DEDUCTIONS.forEach(id => { snap[id] = String(getDeductionVal(id)); });
+    localStorage.setItem(`delivery_v4_w${currentWeekIndex}`, JSON.stringify(snap));
+    localStorage.setItem('delivery_v4_lastWeek', String(currentWeekIndex));
+  } catch(e) {}
+
+  showToast('✓ Semana guardada en el historial');
+
+  // Refrescar TODAS las vistas, sin importar cuál pestaña esté activa,
+  // para que no haga falta recargar la página manualmente.
+  calcTotalsData();      // refresca los totales del Registro (panel actual)
+  renderHistorial();     // refresca la lista del Historial
+  renderEstadisticas();  // refresca Total Generado / Neto del Mes / Ingreso Total
+}
+
+function cargarDescuentosDeSemana(weekIdx) {
+  const raw = localStorage.getItem(`delivery_v4_w${weekIdx}`);
+  DEDUCTIONS.forEach(id => {
+    const inp = document.getElementById(`inp-${id}`);
+    if (!inp) return;
+    if (raw) {
+      try {
+        const data = JSON.parse(raw);
+        const v = parseFloat(data[id] || '0') || 0;
+        inp.dataset.parsedVal = String(v);
+        inp.value = v !== 0 ? fmtNum(v) : '';
+      } catch(e) {
+        inp.dataset.parsedVal = '0';
+        inp.value = '';
+      }
+    } else {
+      // Semana sin datos guardados → limpiar campos
+      inp.dataset.parsedVal = '0';
+      inp.value = '';
+    }
+  });
+}
+
+function cargar() {
+  const last = localStorage.getItem('delivery_v4_lastWeek');
+  if (last !== null) currentWeekIndex = parseInt(last) || 0;
+
+  const raw = localStorage.getItem(`delivery_v4_w${currentWeekIndex}`);
+  if (!raw) return;
+  try {
+    const data = JSON.parse(raw);
+    if (data.sessionData) sessionData = {...data.sessionData};
+    cargarDescuentosDeSemana(currentWeekIndex);
+  } catch(e) {}
+}
+
+// ── Historial render ──────────────────────────────────────────
+function renderHistorial() {
+  const container = document.getElementById('historial-list');
+  const hist = getHistorial();
+
+  if (hist.length === 0) {
+    container.innerHTML = `
+      <div class="historial-empty">
+        <div class="h-icon">📅</div>
+        <p>Acá vas a ver el historial<br>de semanas guardadas.</p>
+      </div>`;
+    return;
+  }
+
+  const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                     'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const months    = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+  // ── Agrupar semanas por mes (según la fecha de inicio de la semana) ──
+  // Una semana se asigna al mes donde cae su MIÉRCOLES (punto medio), así semanas
+  // que cruzan meses no se "parten" — van al mes donde pasan más días.
+  const byMonth = {}; // key: "YYYY-MM"
+  hist.forEach(rec => {
+    const dStart = new Date(rec.dateStart);
+    const midWeek = new Date(dStart);
+    midWeek.setDate(midWeek.getDate() + 3); // miércoles de la semana
+    const key = `${midWeek.getFullYear()}-${String(midWeek.getMonth()+1).padStart(2,'0')}`;
+    if (!byMonth[key]) byMonth[key] = { year: midWeek.getFullYear(), month: midWeek.getMonth(), weeks: [] };
+    byMonth[key].weeks.push(rec);
+  });
+
+  // Ordenar meses de más reciente a más antiguo
+  const sortedMonths = Object.keys(byMonth).sort((a,b) => b.localeCompare(a));
+
+  container.innerHTML = '';
+
+  sortedMonths.forEach(monthKey => {
+    const group = byMonth[monthKey];
+    const label = `${MONTHS_ES[group.month]} ${group.year}`;
+
+    // Acumular totales del mes
+    let mBase=0, mPropina=0, mGrupo=0, mLogros=0, mEfectivo=0, mTotal=0, mNeto=0;
+    let mGestorando=0, mSeguro=0, mPedidosya=0, mAjustes=0;
+    group.weeks.forEach(rec => {
+      const tot = rec.totals || {};
+      const ded = rec.deductions || {};
+      const efeTotal = (tot.efectivo||0) + (rec.mondayNextEfe||0);
+      mBase      += tot.base      || 0;
+      mPropina   += tot.propina   || 0;
+      mGrupo     += tot.grupo     || 0;
+      mLogros    += tot.logros    || 0;
+      mEfectivo  += efeTotal;
+      mTotal     += tot.total     || 0;
+      mNeto      += tot.neto      || 0;
+      mGestorando+= ded.gestorando|| 0;
+      mSeguro    += ded.seguro    || 0;
+      mPedidosya += ded.pedidosya || 0;
+      mAjustes   += ded.ajustes   || 0;
+    });
+
+    // ── Bloque mes ──
+    const monthBlock = document.createElement('div');
+    monthBlock.className = 'hist-month-block';
+
+    // Cabecera del mes (siempre visible, expandible)
+    const mHeader = document.createElement('div');
+    mHeader.className = 'hist-month-header';
+    mHeader.innerHTML = `
+      <div class="hm-left">
+        <span class="hm-arrow">▶</span>
+        <div>
+          <div class="hm-label">📆 ${label}</div>
+          <div class="hm-weeks-count">${group.weeks.length} semana${group.weeks.length>1?'s':''} registrada${group.weeks.length>1?'s':''}</div>
+        </div>
+      </div>
+      <div class="hm-right">
+        <div class="hm-total">${fmtARShtml(mTotal)}</div>
+        <div class="hm-neto-label">neto <span style="font-weight:800">${fmtARShtml(mNeto)}</span></div>
+      </div>`;
+
+    // Detalle del mes (expandible)
+    const mDetail = document.createElement('div');
+    mDetail.className = 'hist-month-detail';
+
+    // Resumen mensual de cifras
+    mDetail.innerHTML = `
+      <div class="hist-month-summary">
+        <div class="hms-title">Resumen de ${label}</div>
+        <div class="hms-grid">
+          <div class="hms-item"><span class="hms-lbl">Base</span><span class="hms-val">${fmtARShtml(mBase)}</span></div>
+          <div class="hms-item"><span class="hms-lbl">Propina</span><span class="hms-val">${fmtARShtml(mPropina)}</span></div>
+          <div class="hms-item"><span class="hms-lbl">Adic. Grupo</span><span class="hms-val">${fmtARShtml(mGrupo)}</span></div>
+          <div class="hms-item"><span class="hms-lbl">Logros</span><span class="hms-val">${fmtARShtml(mLogros)}</span></div>
+          <div class="hms-item"><span class="hms-lbl">💵 Efectivo</span><span class="hms-val">${fmtARShtml(mEfectivo)}</span></div>
+          <div class="hms-item hms-item-full"><span class="hms-lbl">Descuentos</span><span class="hms-val hms-neg">-${fmtARShtml(mGestorando+mSeguro+mPedidosya+mAjustes)}</span></div>
+        </div>
+        <div class="hms-totals-row">
+          <div class="hms-tot-item hms-tot-gen">
+            <div class="hms-tot-lbl">🏆 Total Generado</div>
+            <div class="hms-tot-sub">Base + Grupo + Logros</div>
+            <div class="hms-tot-val">${fmtARShtml(mTotal)}</div>
+          </div>
+          <div class="hms-tot-item hms-tot-neto">
+            <div class="hms-tot-lbl">💰 Neto del mes</div>
+            <div class="hms-tot-sub" style="color:var(--green);opacity:0.75">Total − Descuentos − Efectivo</div>
+            <div class="hms-tot-val">${fmtARShtml(mNeto)}</div>
+          </div>
+        </div>
+        <div class="hms-ingreso-row">
+          <div class="hms-ingreso-lbl">🟣 Ingreso Total del mes</div>
+          <div class="hms-ingreso-sub">Propina + Efectivo + Neto</div>
+          <div class="hms-ingreso-val">${fmtARShtml(mPropina + mEfectivo + mNeto)}</div>
+        </div>
+      </div>`;
+
+    // Semanas dentro del mes
+    group.weeks.forEach(rec => {
+      const card = document.createElement('div');
+      card.className = 'hist-card';
+
+      const dStart = new Date(rec.dateStart);
+      const dEnd   = new Date(rec.dateEnd);
+      const rangeStr = `${dStart.getDate()} ${months[dStart.getMonth()]} – ${dEnd.getDate()} ${months[dEnd.getMonth()]}`;
+      const savedDate = new Date(rec.savedAt);
+      const savedStr  = `Guardado ${savedDate.getDate()}/${savedDate.getMonth()+1}/${savedDate.getFullYear()} ${String(savedDate.getHours()).padStart(2,'0')}:${String(savedDate.getMinutes()).padStart(2,'0')}`;
+
+      const tot = rec.totals || {};
+      const deductions = rec.deductions || {};
+
+      // Si esta semana es la anterior a la actual, leer el efectivo del Lunes en vivo
+      let liveMondayEfe = rec.mondayNextEfe || 0;
+      let netoVivo = tot.neto || 0;
+      if (rec.weekIndex === currentWeekIndex - 1) {
+        let liveEfe = 0;
+        SHIFTS.forEach(shift => {
+          const key = `${currentWeekIndex}_Lunes_${shift.key}_efectivo`;
+          liveEfe += parseFloat(sessionData[key] || '0') || 0;
+        });
+        if (liveEfe > 0) {
+          liveMondayEfe = liveEfe;
+          // Recalcular neto con el efectivo del Lunes en vivo
+          const ded = rec.deductions || {};
+          const base = (tot.base||0)+(tot.grupo||0)+(tot.logros||0);
+          const retPctRec = parseFloat(ded.retencion||0);
+          const retCalc = base * (retPctRec/100);
+          const efeAnterior = tot.efectivo || 0; // efe Mar-Dom guardado
+          netoVivo = base - retCalc - (ded.gestorando||0) - (ded.seguro||0) - (ded.pedidosya||0) - (ded.ajustes||0) - efeAnterior - liveEfe;
+        }
+      }
+
+      const efeTotal = (tot.efectivo || 0) + liveMondayEfe;
+      const dineroRecibido = (efeTotal || 0) + netoVivo;
+      const ingresoTotal = dineroRecibido + (tot.propina || 0);
+      const deudaEstaSemanaCrea = rec.deudaArrastrada || 0;
+      const deudaEstaHereda = rec.deudaAnterior || 0;
+      const deudaYaSaldada = !!rec.deudaSaldadaEnSem;
+      // Solo mostrar badges si la semana tiene datos reales ingresados
+      const tieneData = (tot.total || 0) > 0 || (tot.base || 0) > 0;
+
+      // Badge para la semana que generó deuda:
+      const deudaBadge = (deudaEstaSemanaCrea > 0 && tieneData)
+        ? deudaYaSaldada
+          ? `<div style="margin-top:6px;background:#e6f7ef;border:1.5px solid #00a651;border-radius:10px;padding:8px 10px;font-size:0.72rem;color:#065f2c;">
+              ✅ Deuda de <strong>${fmtARS(deudaEstaSemanaCrea)}</strong> saldada en la semana siguiente
+             </div>`
+          : `<div style="margin-top:6px;background:#fff3cd;border:1.5px solid #f59e0b;border-radius:10px;padding:8px 10px;font-size:0.72rem;color:#92400e;">
+              ⚠️ Generó deuda de <strong>${fmtARS(deudaEstaSemanaCrea)}</strong> para la semana siguiente (cobró más efectivo del que generó)
+             </div>`
+        : '';
+
+      // Badge para la semana que heredó y pagó la deuda — solo si efectivamente la saldó:
+      const deudaHeredadaBadge = (deudaEstaHereda > 0 && rec.deudaSaldada === true)
+        ? `<div style="margin-top:6px;background:#e6f7ef;border:1.5px solid #00a651;border-radius:10px;padding:8px 10px;font-size:0.72rem;color:#065f2c;">
+            ✅ Se descontaron <strong>${fmtARS(deudaEstaHereda)}</strong> de deuda de la semana anterior — ya incluido en el Neto
+           </div>`
+        : '';
+
+      card.innerHTML = `
+        <div class="hist-card-header">
+          <div class="hc-week">${rec.weekLabel}</div>
+          <div class="hc-dates">${rangeStr}</div>
+        </div>
+        <div class="hist-card-body">
+          <div class="hist-expand-header hist-row hrow-grand">
+            <span class="hl">🏆 Total Generado ▸</span>
+            <span class="hv">${fmtARShtml((tot.total || 0) - ((deductions.retencion)||0))}</span>
+          </div>
+          <div class="hist-expand-content">
+            <div class="hist-row"><span class="hl">📊 Base</span><span class="hv">${fmtARShtml(tot.base || 0)}</span></div>
+            <div class="hist-row"><span class="hl">👥 Adic. Grupo</span><span class="hv">${fmtARShtml(tot.grupo || 0)}</span></div>
+            <div class="hist-row"><span class="hl">🏅 Logros</span><span class="hv">${fmtARShtml(tot.logros || 0)}</span></div>
+          </div>
+          <div class="hist-expand-header hist-row">
+            <span class="hl">🟢 Dinero Recibido ▸</span>
+            <span class="hv">${fmtARShtml(dineroRecibido)}</span>
+          </div>
+          <div class="hist-expand-content">
+            <div class="hist-row"><span class="hl">💵 Efectivo (8 días)</span><span class="hv">${fmtARShtml(efeTotal)}</span></div>
+            <div class="hist-row"><span class="hl">💰 Neto estimado</span><span class="hv" style="color:${netoVivo<0?'#dc2626':'inherit'}">${fmtARShtml(netoVivo)}</span></div>
+          </div>
+          <div class="hist-expand-header hist-row" style="margin-top:6px;">
+            <span class="hl" style="color:var(--purple);font-weight:700;">🟣 Ingreso Total ▸</span>
+            <span class="hv" style="color:var(--purple);">${fmtARShtml(ingresoTotal)}</span>
+          </div>
+          <div class="hist-expand-content">
+            <div class="hist-row"><span class="hl">🎁 Propina</span><span class="hv">${fmtARShtml(tot.propina || 0)}</span></div>
+            <div class="hist-row"><span class="hl">💵 Efectivo (8 días)</span><span class="hv">${fmtARShtml(efeTotal)}</span></div>
+            <div class="hist-row"><span class="hl">💰 Neto estimado</span><span class="hv" style="color:${netoVivo<0?'#dc2626':'inherit'}">${fmtARShtml(netoVivo)}</span></div>
+          </div>
+        </div>
+        <div class="hist-saved">${savedStr} · Doble tap para detalle</div>
+        ${deudaHeredadaBadge}${deudaBadge}`;
+
+      card.querySelectorAll('.hist-expand-header').forEach(h=>{
+        h.addEventListener('click',()=>{ const c=h.nextElementSibling; if(c) c.classList.toggle('open'); });
+      });
+      card.addEventListener('dblclick',()=>showHistorialDetail(rec));
+
+      mDetail.appendChild(card);
+    });
+
+    monthBlock.appendChild(mHeader);
+    monthBlock.appendChild(mDetail);
+    container.appendChild(monthBlock);
+
+    // Toggle expand/collapse del mes
+    mHeader.addEventListener('click', () => {
+      const open = mDetail.classList.toggle('open');
+      mHeader.querySelector('.hm-arrow').textContent = open ? '▼' : '▶';
+    });
+  });
+}
+
+function showHistorialDetail(rec) {
+  const container = document.getElementById('historial-list');
+  container.innerHTML = '';
+
+  const dStart = new Date(rec.dateStart);
+  const dEnd   = new Date(rec.dateEnd);
+  const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const rangeStr = `${dStart.getDate()} ${months[dStart.getMonth()]} – ${dEnd.getDate()} ${months[dEnd.getMonth()]}`;
+
+  const tot = rec.totals || {};
+  const efeTotal = (tot.efectivo || 0) + (rec.mondayNextEfe || 0);
+  const deductions = rec.deductions || {};
+
+  let html = `
+    <div class="hist-detail">
+      <div class="hist-detail-header">
+        <span>${rec.weekLabel} &nbsp;·&nbsp; ${rangeStr}</span>
+        <button class="hist-back-btn" onclick="renderHistorial()">← Volver</button>
+      </div>
+
+      <div class="hist-section">
+        <div class="hist-section-title">Totales de ingresos</div>
+        <div class="hist-day-row"><span class="hdl">Base</span><span class="hdv">${fmtARShtml(tot.base||0)}</span></div>
+        <div class="hist-day-row"><span class="hdl">Propina</span><span class="hdv">${fmtARShtml(tot.propina||0)}</span></div>
+        <div class="hist-day-row"><span class="hdl">Adic. Grupo</span><span class="hdv">${fmtARShtml(tot.grupo||0)}</span></div>
+        <div class="hist-day-row"><span class="hdl">Logros</span><span class="hdv">${fmtARShtml(tot.logros||0)}</span></div>
+        <div class="hist-day-row"><span class="hdl">💵 Efectivo (lun-dom)</span><span class="hdv">${fmtARShtml(tot.efectivo||0)}</span></div>
+        ${rec.mondayNextEfe ? `<div class="hist-day-row"><span class="hdl">💵 Ef. Lunes siguiente</span><span class="hdv">${fmtARShtml(rec.mondayNextEfe)}</span></div>` : ''}
+        <div class="hist-day-row"><span class="hdl">💵 Efectivo total (8 días)</span><span class="hdv">${fmtARShtml(efeTotal)}</span></div>
+        <div class="hist-day-row" style="margin-top:4px"><span class="hdl" style="color:var(--rappi-pink-dark);font-weight:700">🏆 Total Generado</span><span class="hdv" style="color:var(--rappi-pink-dark)">${fmtARShtml(tot.total||0)}</span></div>
+      </div>
+
+      <div class="hist-section">
+        <div class="hist-section-title">Descuentos</div>
+        <div class="hist-day-row"><span class="hdl">Gestorando</span><span class="hdv">${fmtARShtml(deductions.gestorando||0)}</span></div>
+        <div class="hist-day-row"><span class="hdl">Seguro</span><span class="hdv">${fmtARShtml(deductions.seguro||0)}</span></div>
+        <div class="hist-day-row"><span class="hdl">PedidosYa Crédito</span><span class="hdv">${fmtARShtml(deductions.pedidosya||0)}</span></div>
+        <div class="hist-day-row"><span class="hdl">Ajustes</span><span class="hdv">${fmtARShtml(deductions.ajustes||0)}</span></div>
+        <div class="hist-day-row" style="margin-top:4px"><span class="hdl" style="color:var(--green);font-weight:700">💰 Neto estimado</span><span class="hdv" style="color:${(tot.neto||0) < 0 && !rec.deudaSaldadaEnSem ? '#dc2626' : 'var(--green)'};">${fmtARShtml(tot.neto||0)}</span></div>
+        ${rec.deudaArrastrada > 0
+          ? rec.deudaSaldadaEnSem
+            ? `<div class="hist-day-row" style="margin-top:6px;background:#e6f7ef;border-radius:8px;padding:6px 8px;"><span class="hdl" style="color:#065f2c;font-weight:700;">✅ Deuda saldada en sem. siguiente</span><span class="hdv" style="color:#00a651;">${fmtARShtml(rec.deudaArrastrada)}</span></div>`
+            : `<div class="hist-day-row" style="margin-top:6px;background:#fff3cd;border-radius:8px;padding:6px 8px;"><span class="hdl" style="color:#92400e;font-weight:700;">⚠️ Deuda generada p/ próx. semana</span><span class="hdv" style="color:#dc2626;">${fmtARShtml(rec.deudaArrastrada)}</span></div>`
+          : ''}
+        ${rec.deudaAnterior > 0 ? `<div class="hist-day-row" style="margin-top:4px;background:#e6f7ef;border-radius:8px;padding:6px 8px;"><span class="hdl" style="color:#065f2c;font-weight:700;">✅ Descuento deuda anterior</span><span class="hdv" style="color:#00a651;">-${fmtARShtml(rec.deudaAnterior)}</span></div>` : ''}
+      </div>`;
+
+  // Day by day breakdown
+  if (rec.days) {
+    html += `<div class="hist-section"><div class="hist-section-title">Detalle por día</div>`;
+    DAY_NAMES.forEach(day => {
+      const dayData = rec.days[day];
+      if (!dayData) return;
+      let hasData = false;
+      SHIFTS.forEach(sh => {
+        if (!dayData[sh.key]) return;
+        FIELDS.forEach(f => { if ((dayData[sh.key][f.key]||0) > 0) hasData = true; });
+      });
+      if (!hasData) return;
+
+      html += `<div style="margin-top:8px;margin-bottom:3px;font-size:0.72rem;font-weight:700;color:var(--text)">${day}</div>`;
+      SHIFTS.forEach(sh => {
+        if (!dayData[sh.key]) return;
+        let shiftHasData = false;
+        FIELDS.forEach(f => { if ((dayData[sh.key][f.key]||0) > 0) shiftHasData = true; });
+        if (!shiftHasData) return;
+        html += `<div style="font-size:0.65rem;color:var(--muted);margin-bottom:2px">${sh.label}</div>`;
+        FIELDS.forEach(f => {
+          const v = dayData[sh.key][f.key] || 0;
+          if (v === 0) return;
+          html += `<div class="hist-day-row"><span class="hdl">&nbsp;&nbsp;${f.label.replace('💵 ','').replace('🏅 ','')}</span><span class="hdv">${fmtARShtml(v)}</span></div>`;
+        });
+      });
+    });
+    html += `</div>`;
+  }
+
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+function limpiar() {
+  const day = DAY_NAMES[currentDayIndex];
+  const articulos = { Lunes:'del', Martes:'del', Miércoles:'del', Jueves:'del', Viernes:'del', Sábado:'del', Domingo:'del' };
+  const art = articulos[day] || 'del';
+  showConfirm(`¿Limpiar los datos ${art} ${day}?`, () => {
+    // Borrar solo las entradas del día activo en sessionData
+    SHIFTS.forEach(shift => {
+      FIELDS.forEach(f => {
+        const key = `${currentWeekIndex}_${day}_${shift.key}_${f.key}`;
+        delete sessionData[key];
+      });
+    });
+    // Limpiar los inputs visibles
+    document.querySelectorAll(`input[data-day="${day}"]`).forEach(inp => { inp.value = ''; });
+    calcTotals();
+    showToast(`🗑 Datos ${art} ${day} eliminados`);
+  });
+}
+
+function exportarTexto() {
+  // Helper: extrae solo el número limpio de un elemento display (quita el span ARS)
+  function getDisplayText(id) {
+    const el = document.getElementById(id);
+    if (!el) return '0,00 ARS';
+    // Clonar para no modificar el DOM, quitar spans y limpiar
+    const clone = el.cloneNode(true);
+    clone.querySelectorAll('.ars-label').forEach(s => s.remove());
+    return clone.textContent.trim() + ' ARS';
+  }
+
+  const weekLabel = getWeekLabel(allWeeks[currentWeekIndex]);
+  let lines = ['=== RESUMEN SEMANAL - DELIVERY ===', `Semana: ${weekLabel}`, ''];
+
+  DAY_NAMES.forEach(day => {
+    let hayDatos = false;
+    SHIFTS.forEach(shift => {
+      const vals = FIELDS.map(f => getInpVal(day, shift.key, f.key));
+      if (vals.some(v => v > 0)) {
+        if (!hayDatos) { lines.push(`📅 ${day}`); hayDatos = true; }
+        lines.push(`  ${shift.label}: Base=${fmtARS(vals[0])} | Prop=${fmtARS(vals[1])} | Grupo=${fmtARS(vals[2])} | Logros=${fmtARS(vals[3])} | Efe=${fmtARS(vals[4])}`);
+      }
+    });
+    if (hayDatos) lines.push('');
+  });
+
+  lines.push('─────────────────────');
+  lines.push('TOTALES:');
+  lines.push(`  Base:            ${getDisplayText('tot-base')}`);
+  lines.push(`  Propina:         ${getDisplayText('tot-propina')}`);
+  lines.push(`  Adic. Grupo:     ${getDisplayText('tot-grupo')}`);
+  lines.push(`  Logros:          ${getDisplayText('tot-logros')}`);
+  lines.push(`  💵 Efectivo:     ${getDisplayText('tot-efectivo')}`);
+  lines.push(`  🏆 Total Gen.:   ${getDisplayText('tot-total')}`);
+  lines.push('');
+  lines.push('DESCUENTOS:');
+  lines.push(`  Gestorando:      ${fmtARS(getDeductionVal('gestorando'))}`);
+  lines.push(`  Seguro:          ${fmtARS(getDeductionVal('seguro'))}`);
+  lines.push(`  Pedidos ya:      ${fmtARS(getDeductionVal('pedidosya'))}`);
+  lines.push(`  Ajustes:         ${fmtARS(getDeductionVal('ajustes'))}`);
+  lines.push('');
+  lines.push(`  💰 Neto estimado: ${getDisplayText('tot-neto')}`);
+  lines.push(`  Diferencia:       ${getDisplayText('diferencia')}`);
+
+  const texto = lines.join('\n');
+  copiarAlPortapapeles(texto, '📋 Resumen copiado');
+}
+
+// ── Clipboard helper (funciona en file:// y móviles) ──────────
+function copiarAlPortapapeles(texto, mensajeExito) {
+  // Método 1: API moderna (HTTPS / algunos Android)
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(texto)
+      .then(() => showToast(mensajeExito || '✓ Copiado'))
+      .catch(() => copiarFallback(texto, mensajeExito));
+    return;
+  }
+  copiarFallback(texto, mensajeExito);
+}
+
+function copiarFallback(texto, mensajeExito) {
+  // Método 2: execCommand (funciona en file://, WebView Android)
+  const ta = document.createElement('textarea');
+  ta.value = texto;
+  ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  // Para iOS necesitamos setSelectionRange
+  ta.setSelectionRange(0, ta.value.length);
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch(e) {}
+  document.body.removeChild(ta);
+  if (ok) {
+    showToast(mensajeExito || '✓ Copiado');
+  } else {
+    // Método 3: mostrar modal con el texto para copiar manualmente
+    mostrarModalCopia(texto);
+  }
+}
+
+function mostrarModalCopia(texto) {
+  // Eliminar modal previo si existe
+  const prev = document.getElementById('copy-modal');
+  if (prev) prev.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'copy-modal';
+  overlay.style.cssText = `
+    position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;
+    display:flex;align-items:flex-end;justify-content:center;padding:16px;
+  `;
+
+  const box = document.createElement('div');
+  box.style.cssText = `
+    background:#fff;border-radius:16px;padding:18px;width:100%;max-width:420px;
+    box-shadow:0 8px 32px rgba(0,0,0,0.25);
+  `;
+  box.innerHTML = `
+    <div style="font-size:0.8rem;font-weight:700;color:#1a1d27;margin-bottom:10px">
+      📋 Seleccioná y copiá el texto
+    </div>
+    <textarea readonly style="
+      width:100%;height:180px;font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace;font-size:0.72rem;
+      border:1.5px solid #e5e7ef;border-radius:10px;padding:10px;
+      color:#1a1d27;resize:none;outline:none;background:#f8f9fc;
+    ">${texto}</textarea>
+    <button style="
+      margin-top:10px;width:100%;background:#FF3F6C;color:#fff;border:none;
+      border-radius:10px;padding:12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      font-size:0.82rem;font-weight:700;cursor:pointer;
+    " onclick="document.getElementById('copy-modal').remove()">Cerrar</button>
+  `;
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+  overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+
+  // Auto-seleccionar el textarea
+  const ta = box.querySelector('textarea');
+  setTimeout(() => { ta.focus(); ta.select(); ta.setSelectionRange(0, ta.value.length); }, 100);
+}
+
+// ── Limpiar historial ─────────────────────────────────────────
+function limpiarHistorial() {
+  const hist = getHistorial();
+  if (hist.length === 0) { showToast('El historial ya está vacío'); return; }
+
+  const prev = document.getElementById('del-hist-modal');
+  if (prev) prev.remove();
+
+  const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+  const overlay = document.createElement('div');
+  overlay.id = 'del-hist-modal';
+  overlay.style.cssText = `
+    position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;
+    display:flex;align-items:flex-end;justify-content:center;
+  `;
+
+  const box = document.createElement('div');
+  box.style.cssText = `
+    background:#fff;border-radius:20px 20px 0 0;padding:20px 18px 32px;
+    width:100%;max-width:480px;max-height:80vh;display:flex;flex-direction:column;
+    box-shadow:0 -4px 24px rgba(0,0,0,0.18);
+  `;
+
+  // Header
+  const hdr = document.createElement('div');
+  hdr.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;';
+  hdr.innerHTML = `
+    <span style="font-size:0.92rem;font-weight:800;color:#1a1d27">🗑 Eliminar semanas</span>
+    <button onclick="document.getElementById('del-hist-modal').remove()" style="
+      background:#f2f3f7;border:none;border-radius:8px;padding:6px 10px;
+      font-size:0.75rem;font-weight:700;color:#6b7280;cursor:pointer;">✕ Cerrar</button>
+  `;
+  box.appendChild(hdr);
+
+  // Seleccionar todo
+  const selAllWrap = document.createElement('div');
+  selAllWrap.style.cssText = `
+    display:flex;align-items:center;gap:10px;padding:8px 12px;
+    background:#f8f9fc;border-radius:10px;margin-bottom:10px;cursor:pointer;
+  `;
+  selAllWrap.innerHTML = `
+    <input type="checkbox" id="chk-all" style="width:18px;height:18px;accent-color:#FF3F6C;cursor:pointer;">
+    <label for="chk-all" style="font-size:0.78rem;font-weight:700;color:#1a1d27;cursor:pointer;flex:1;">
+      Seleccionar todas
+    </label>
+  `;
+  box.appendChild(selAllWrap);
+
+  // Lista de semanas scrolleable
+  const list = document.createElement('div');
+  list.style.cssText = 'overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:6px;margin-bottom:14px;';
+
+  hist.forEach((rec, idx) => {
+    const dStart = new Date(rec.dateStart);
+    const dEnd   = new Date(rec.dateEnd);
+    const rangeStr = `${dStart.getDate()} ${months[dStart.getMonth()]} – ${dEnd.getDate()} ${months[dEnd.getMonth()]}`;
+    const savedDate = new Date(rec.savedAt);
+    const savedStr  = `${savedDate.getDate()}/${savedDate.getMonth()+1}/${savedDate.getFullYear()}`;
+
+    const row = document.createElement('label');
+    row.style.cssText = `
+      display:flex;align-items:center;gap:12px;padding:10px 12px;
+      border:1.5px solid #e5e7ef;border-radius:12px;cursor:pointer;
+    `;
+    row.innerHTML = `
+      <input type="checkbox" class="chk-week" data-idx="${idx}"
+        style="width:18px;height:18px;accent-color:#FF3F6C;cursor:pointer;flex-shrink:0;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:0.8rem;font-weight:700;color:#1a1d27">${rec.weekLabel}</div>
+        <div style="font-size:0.65rem;color:#9ca3af;margin-top:1px">${rangeStr} · Guardado ${savedStr}</div>
+      </div>
+      <div style="font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace;font-size:0.78rem;font-weight:700;color:#FF3F6C;white-space:nowrap;">
+        ${fmtARShtml(rec.totals?.neto || 0)}
+      </div>
+    `;
+    list.appendChild(row);
+  });
+  box.appendChild(list);
+
+  // Botones acción
+  const btns = document.createElement('div');
+  btns.style.cssText = 'display:flex;gap:10px;';
+  btns.innerHTML = `
+    <button id="del-cancel-btn" style="
+      flex:1;background:#f2f3f7;color:#6b7280;border:none;border-radius:12px;
+      padding:13px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;
+    ">Cancelar</button>
+    <button id="del-confirm-btn" style="
+      flex:1;background:#FF3F6C;color:#fff;border:none;border-radius:12px;
+      padding:13px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;
+    ">Eliminar seleccionadas</button>
+  `;
+  box.appendChild(btns);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  // Lógica seleccionar todo
+  const chkAll = box.querySelector('#chk-all');
+  chkAll.addEventListener('change', () => {
+    box.querySelectorAll('.chk-week').forEach(c => c.checked = chkAll.checked);
+  });
+  box.querySelectorAll('.chk-week').forEach(c => {
+    c.addEventListener('change', () => {
+      const all  = box.querySelectorAll('.chk-week');
+      const checked = box.querySelectorAll('.chk-week:checked');
+      chkAll.checked = checked.length === all.length;
+      chkAll.indeterminate = checked.length > 0 && checked.length < all.length;
+    });
+  });
+
+  // Cancelar
+  box.querySelector('#del-cancel-btn').onclick = () => overlay.remove();
+  overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+
+  // Confirmar borrado
+  box.querySelector('#del-confirm-btn').onclick = () => {
+    const checked = [...box.querySelectorAll('.chk-week:checked')];
+    if (checked.length === 0) { showToast('Seleccioná al menos una semana'); return; }
+
+    const idxToDelete = new Set(checked.map(c => parseInt(c.dataset.idx)));
+    const newHist = hist.filter((_, i) => !idxToDelete.has(i));
+    saveHistorial(newHist);
+    overlay.remove();
+    renderHistorial();
+    showToast(`🗑 ${checked.length} semana${checked.length > 1 ? 's' : ''} eliminada${checked.length > 1 ? 's' : ''}`);
+  };
+}
+
+// ── Confirm dialog (reemplaza window.confirm para WebViews) ───
+function showConfirm(msg, onYes) {
+  const prev = document.getElementById('confirm-modal');
+  if (prev) prev.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'confirm-modal';
+  overlay.style.cssText = `
+    position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;
+    display:flex;align-items:center;justify-content:center;padding:24px;
+  `;
+
+  const box = document.createElement('div');
+  box.style.cssText = `
+    background:#fff;border-radius:16px;padding:22px 18px;width:100%;max-width:360px;
+    box-shadow:0 8px 32px rgba(0,0,0,0.2);text-align:center;
+  `;
+  box.innerHTML = `
+    <div style="font-size:0.88rem;font-weight:600;color:#1a1d27;line-height:1.5;margin-bottom:18px">${msg}</div>
+    <div style="display:flex;gap:10px">
+      <button id="conf-no" style="
+        flex:1;background:#f2f3f7;color:#6b7280;border:none;border-radius:10px;
+        padding:12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;
+      ">Cancelar</button>
+      <button id="conf-yes" style="
+        flex:1;background:#FF3F6C;color:#fff;border:none;border-radius:10px;
+        padding:12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;
+      ">Confirmar</button>
+    </div>
+  `;
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+  box.querySelector('#conf-no').onclick  = () => overlay.remove();
+  box.querySelector('#conf-yes').onclick = () => { overlay.remove(); onYes(); };
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── Init ──────────────────────────────────────────────────────
+allWeeks = generateWeeks();
+currentWeekIndex = getCurrentMondayIndex();
+
+buildWeekSelect();
+cargar();
+
+document.getElementById('weekSelect').value = currentWeekIndex;
+document.getElementById('weekYearLabel').textContent = `Semana del año ${allWeeks[currentWeekIndex].getFullYear()}`;
+renderDay();
+setupDeductionInputs();
+calcTotals();
+
+// ═══════════════════════════════════════════════
+// ESTADÍSTICAS — función única
+// ═══════════════════════════════════════════════
+function renderEstadisticas() {
+  const hist = getHistorial();
+  const container = document.getElementById('tab-estadisticas');
+  if (!container) return;
+
+  const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                     'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+  // ── Totales globales ──
+  let gBase=0,gProp=0,gGrupo=0,gLogros=0,gEfe=0,gTotal=0,gNeto=0;
+  let gGestor=0,gSeguro=0,gPY=0,gAjus=0;
+  let gDeudaTotal=0, semanasConDeuda=0;
+  let bestWeekTotal=0,bestWeekLabel='-',bestWeekNeto=0,bestWeekNetoLabel='-';
+  let bestDay=0,bestDayName='-',bestDayWeek='-';
+
+  hist.forEach(w => {
+    const t=w.totals||{}, ded=w.deductions||{};
+    const efe=(t.efectivo||0)+(w.mondayNextEfe||0);
+    gBase+=t.base||0; gProp+=t.propina||0; gGrupo+=t.grupo||0;
+    gLogros+=t.logros||0; gEfe+=efe; gTotal+=t.total||0; gNeto+=t.neto||0;
+    gGestor+=ded.gestorando||0; gSeguro+=ded.seguro||0; gPY+=ded.pedidosya||0; gAjus+=ded.ajustes||0;
+    if (w.deudaArrastrada > 0 && !w.deudaSaldadaEnSem) { gDeudaTotal += w.deudaArrastrada; semanasConDeuda++; }
+    if ((t.total||0)>bestWeekTotal) { bestWeekTotal=t.total||0; bestWeekLabel=w.weekLabel; }
+    if ((t.neto||0)>bestWeekNeto)   { bestWeekNeto=t.neto||0;   bestWeekNetoLabel=w.weekLabel; }
+    if (w.days) {
+      Object.keys(w.days).forEach(d => {
+        let sum=0;
+        ['DIA','NOCHE'].forEach(s => { const x=w.days[d][s]||{}; sum+=(x.base||0)+(x.propina||0)+(x.grupo||0)+(x.logros||0); });
+        if (sum>bestDay) { bestDay=sum; bestDayName=d; bestDayWeek=w.weekLabel; }
+      });
+    }
+  });
+  const n=hist.length||1;
+  const gIngreso=gProp+gEfe+gNeto;
+  const gDesc=gGestor+gSeguro+gPY+gAjus;
+
+  // ── Agrupar por mes ──
+  const byMonth={};
+  hist.forEach(rec => {
+    const mid=new Date(rec.dateStart); mid.setDate(mid.getDate()+3);
+    const key=mid.getFullYear()+'-'+String(mid.getMonth()+1).padStart(2,'0');
+    if (!byMonth[key]) byMonth[key]={year:mid.getFullYear(),month:mid.getMonth(),weeks:[]};
+    byMonth[key].weeks.push(rec);
+  });
+  const sortedMonths=Object.keys(byMonth).sort((a,b)=>b.localeCompare(a));
+
+  function fmtPct(v,tot){ return tot>0 ? ((v/tot)*100).toFixed(1)+'%' : '—'; }
+
+  // ── Helper: construir acordeón ──
+  function accordion(icon, title, contentHTML, openByDefault) {
+    var uid = 'sacc_' + Math.random().toString(36).slice(2);
+    return '<div class="sacc-block">' +
+      '<div class="sacc-header" onclick="var d=document.getElementById(\''+uid+'\');var open=d.classList.toggle(\'open\');this.querySelector(\'.sacc-arrow\').textContent=open?\'▼\':\'▶\'">' +
+        '<span class="sacc-icon">' + icon + '</span>' +
+        '<span class="sacc-title">' + title + '</span>' +
+        '<span class="sacc-arrow">' + (openByDefault ? '▼' : '▶') + '</span>' +
+      '</div>' +
+      '<div class="sacc-body' + (openByDefault ? ' open' : '') + '" id="' + uid + '">' +
+        contentHTML +
+      '</div>' +
+    '</div>';
+  }
+
+  var html = '';
+  var empty = !hist.length;
+
+  // ══ ACORDEÓN 1: Resumen Global ══
+  var resumenHTML = empty ? '<div class="stats-empty">Guardá semanas para ver estadísticas.</div>' :
+    '<div class="stats-kpi-grid">' +
+      '<div class="stats-kpi stats-kpi-pink"><div class="stats-kpi-lbl">🏆 Total Generado</div><div class="stats-kpi-val">' + fmtARShtml(gTotal) + '</div><div class="stats-kpi-sub">' + hist.length + ' semanas</div></div>' +
+      '<div class="stats-kpi stats-kpi-green"><div class="stats-kpi-lbl">💰 Neto Acumulado</div><div class="stats-kpi-val">' + fmtARShtml(gNeto) + '</div><div class="stats-kpi-sub">prom. ' + fmtARShtml(Math.round(gNeto/n)) + '/sem</div></div>' +
+      '<div class="stats-kpi stats-kpi-purple"><div class="stats-kpi-lbl">🟣 Ingreso Total</div><div class="stats-kpi-val">' + fmtARShtml(gIngreso) + '</div><div class="stats-kpi-sub">Prop+Efe+Neto</div></div>' +
+      '<div class="stats-kpi stats-kpi-blue"><div class="stats-kpi-lbl">💵 Efectivo Total</div><div class="stats-kpi-val">' + fmtARShtml(gEfe) + '</div><div class="stats-kpi-sub">8 días/semana</div></div>' +
+    '</div>' +
+    '<div class="stats-row"><div class="stats-row-left"><div class="stats-row-icon" style="background:#fff3e0">⭐</div><div class="stats-row-text"><div class="stats-row-title">Mejor semana (Total)</div><div class="stats-row-sub">' + bestWeekLabel + '</div></div></div><div class="stats-row-val pink">' + fmtARShtml(bestWeekTotal) + '</div></div>' +
+    '<div class="stats-row"><div class="stats-row-left"><div class="stats-row-icon" style="background:#e6f7ef">💰</div><div class="stats-row-text"><div class="stats-row-title">Mejor semana (Neto)</div><div class="stats-row-sub">' + bestWeekNetoLabel + '</div></div></div><div class="stats-row-val green">' + fmtARShtml(bestWeekNeto) + '</div></div>' +
+    '<div class="stats-row"><div class="stats-row-left"><div class="stats-row-icon" style="background:#fffde7">⭐</div><div class="stats-row-text"><div class="stats-row-title">Mejor día histórico</div><div class="stats-row-sub">' + bestDayName + ' · ' + bestDayWeek + '</div></div></div><div class="stats-row-val pink">' + fmtARShtml(bestDay) + '</div></div>' +
+    '<div class="stats-row"><div class="stats-row-left"><div class="stats-row-icon" style="background:#fce4ec">📉</div><div class="stats-row-text"><div class="stats-row-title">Total Descuentos</div><div class="stats-row-sub">Gestor+Seguro+PY+Ajustes</div></div></div><div class="stats-row-val" style="color:var(--red)">-' + fmtARShtml(gDesc) + '</div></div>' +
+    (gDeudaTotal > 0 ? '<div class="stats-row" style="background:#fff8e1;border-radius:10px;padding:2px 0;"><div class="stats-row-left"><div class="stats-row-icon" style="background:#fff3cd">⚠️</div><div class="stats-row-text"><div class="stats-row-title" style="color:#92400e;">Deuda generada (total)</div><div class="stats-row-sub">' + semanasConDeuda + ' semana' + (semanasConDeuda>1?'s':'') + ' con saldo negativo</div></div></div><div class="stats-row-val" style="color:#dc2626;">' + fmtARShtml(gDeudaTotal) + '</div></div>' : '');
+
+  html += accordion('📊', 'Resumen Global', resumenHTML, true);
+
+  // ══ ACORDEÓN 2: Por Mes ══
+  var mesHTML = '';
+  if (empty) {
+    mesHTML = '<div class="stats-empty">Sin datos mensuales.</div>';
+  } else {
+    sortedMonths.forEach(function(key) {
+      var g=byMonth[key];
+      var lbl=MONTHS_ES[g.month]+' '+g.year;
+      var mBase=0,mProp=0,mGrupo=0,mLogros=0,mEfe=0,mTotal=0,mNeto=0;
+      g.weeks.forEach(function(w){
+        var t=w.totals||{},efe=(t.efectivo||0)+(w.mondayNextEfe||0);
+        mBase+=t.base||0; mProp+=t.propina||0; mGrupo+=t.grupo||0;
+        mLogros+=t.logros||0; mEfe+=efe; mTotal+=t.total||0; mNeto+=t.neto||0;
+      });
+      var mIngreso=mProp+mEfe+mNeto;
+      var uid2='smr_'+Math.random().toString(36).slice(2);
+      mesHTML +=
+        '<div class="stats-month-row">' +
+          '<div class="smr-header" onclick="var d=document.getElementById(\''+uid2+'\');var open=d.classList.toggle(\'open\');this.querySelector(\'.smr-arr\').textContent=open?\'▼\':\'▶\'">' +
+            '<div class="smr-left"><span class="smr-arr">▶</span><div><div class="smr-lbl">'+lbl+'</div><div class="smr-sub">'+g.weeks.length+' sem · prom '+fmtARShtml(Math.round(mTotal/g.weeks.length))+'/sem</div></div></div>' +
+            '<div class="smr-right"><div class="smr-total">'+fmtARShtml(mTotal)+'</div><div class="smr-neto">neto '+fmtARShtml(mNeto)+'</div></div>' +
+          '</div>' +
+          '<div class="smr-detail" id="'+uid2+'">' +
+            '<div class="smr-grid">' +
+              '<div class="smr-gi"><span class="smr-gl">Base</span><span class="smr-gv">'+fmtARShtml(mBase)+'</span></div>' +
+              '<div class="smr-gi"><span class="smr-gl">Propina</span><span class="smr-gv">'+fmtARShtml(mProp)+'</span></div>' +
+              '<div class="smr-gi"><span class="smr-gl">Grupo</span><span class="smr-gv">'+fmtARShtml(mGrupo)+'</span></div>' +
+              '<div class="smr-gi"><span class="smr-gl">Logros</span><span class="smr-gv">'+fmtARShtml(mLogros)+'</span></div>' +
+              '<div class="smr-gi"><span class="smr-gl">💵 Efectivo</span><span class="smr-gv">'+fmtARShtml(mEfe)+'</span></div>' +
+              '<div class="smr-gi smr-gi-full" style="border-top:1px solid var(--border);padding-top:6px;margin-top:2px"><span class="smr-gl" style="color:var(--purple);font-weight:700">🟣 Ingreso Total</span><span class="smr-gv" style="color:var(--purple)">'+fmtARShtml(mIngreso)+'</span></div>' +
+            '</div>' +
+            g.weeks.map(function(w){
+              var t=w.totals||{},ds=new Date(w.dateStart),de=new Date(w.dateEnd);
+              var deudaIcon = w.deudaArrastrada > 0
+                ? (w.deudaSaldadaEnSem
+                    ? ' <span style="color:#00a651;font-size:0.6rem;" title="Deuda saldada">✅</span>'
+                    : ' <span style="color:#dc2626;font-size:0.6rem;" title="Generó deuda de '+fmtARS(w.deudaArrastrada)+'">⚠️</span>')
+                : '';
+              return '<div class="smr-week-row"><span class="smr-wl">'+w.weekLabel+' <small>'+ds.getDate()+' '+months[ds.getMonth()]+'–'+de.getDate()+' '+months[de.getMonth()]+'</small>'+deudaIcon+'</span><span class="smr-wv" style="color:'+(t.neto<0&&!w.deudaSaldadaEnSem?'#dc2626':'var(--text)')+'">'+fmtARShtml(t.total||0)+'</span></div>';
+            }).join('') +
+          '</div>' +
+        '</div>';
+    });
+  }
+  html += accordion('📆', 'Por Mes', mesHTML, false);
+
+  // ══ ACORDEÓN 3: Distribución & Promedios ══
+  var grand=gBase+gProp+gGrupo+gLogros;
+  var distHTML = empty ? '<div class="stats-empty">Sin datos.</div>' :
+    [['📄','Base',gBase,'#0284c7'],['🎁','Propina',gProp,'#7c3aed'],['👥','Grupo',gGrupo,'#ea580c'],['🎯','Logros',gLogros,'#00a651']].map(function(x){
+      return '<div class="dist-item"><div class="dist-item-icon">'+x[0]+'</div><span class="dist-item-name">'+x[1]+'</span><span class="dist-item-pct" style="color:'+x[3]+'">'+fmtPct(x[2],grand)+'</span><span class="dist-item-val">'+fmtARShtml(x[2])+'</span></div>';
+    }).join('') +
+    '<div class="dist-total-row"><span class="dist-total-lbl">TOTAL</span><span class="dist-total-pct">100%</span><span class="dist-total-val">'+fmtARShtml(grand)+'</span></div>' +
+    '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">' +
+      '<div class="dist-item"><div class="dist-item-icon">🏆</div><span class="dist-item-name">Prom. Total/sem</span><span class="dist-item-pct"></span><span class="dist-item-val">'+fmtARShtml(Math.round(gTotal/n))+'</span></div>' +
+      '<div class="dist-item"><div class="dist-item-icon">💰</div><span class="dist-item-name">Prom. Neto/sem</span><span class="dist-item-pct" style="color:var(--green)"></span><span class="dist-item-val" style="color:var(--green)">'+fmtARShtml(Math.round(gNeto/n))+'</span></div>' +
+      '<div class="dist-item"><div class="dist-item-icon">🟣</div><span class="dist-item-name">Prom. Ingreso/sem</span><span class="dist-item-pct" style="color:var(--purple)"></span><span class="dist-item-val" style="color:var(--purple)">'+fmtARShtml(Math.round(gIngreso/n))+'</span></div>' +
+    '</div>';
+  html += accordion('📈', 'Distribución & Promedios', distHTML, false);
+
+  // ══ ACORDEÓN 4: Top 5 Semanas ══
+  var top5HTML = '';
+  if (empty) {
+    top5HTML = '<div class="stats-empty">Sin datos.</div>';
+  } else {
+    var top5=[...hist].sort(function(a,b){return (b.totals?.total||0)-(a.totals?.total||0);}).slice(0,5);
+    top5.forEach(function(w,i){
+      var t=w.totals||{},ds=new Date(w.dateStart),de=new Date(w.dateEnd);
+      var ingreso=(t.propina||0)+(t.efectivo||0)+(w.mondayNextEfe||0)+(t.neto||0);
+      top5HTML += '<div class="top10-item">' +
+        '<div class="top10-rank-row"><div class="top10-badge">#'+(i+1)+'</div><div class="top10-week">'+w.weekLabel+' <small style="font-weight:400;color:var(--sub)">'+ds.getDate()+' '+months[ds.getMonth()]+'–'+de.getDate()+' '+months[de.getMonth()]+'</small></div><div class="top10-total">'+fmtARShtml(t.total||0)+'</div></div>' +
+        '<div class="top10-neto-row"><span class="top10-neto-lbl">💰 Neto</span><span class="top10-neto-val">'+fmtARShtml(t.neto||0)+'</span><span class="top10-neto-lbl" style="margin-left:8px">🟣 Ingreso</span><span class="top10-neto-val" style="color:var(--purple)">'+fmtARShtml(ingreso)+'</span></div>' +
+      '</div>';
+    });
+  }
+  html += accordion('🏆', 'Top 5 Semanas', top5HTML, false);
+
+  // ══ ACORDEÓN 5: Días y Turnos Productivos ══
+  var prodHTML = '';
+  (function() {
+    var dayTotals={}, shiftTotals={DIA:0,NOCHE:0}, shiftCount={DIA:0,NOCHE:0};
+    // weekDetail[day][turno] = [{val, ds, weekLabel}, ...]  (para el desglose por mes al tocar Día/Noche)
+    var weekDetail={};
+    DAY_NAMES.forEach(function(d){ weekDetail[d]={DIA:[],NOCHE:[]}; });
+
+    function acum(days, monday, weekLabel) {
+      if (!days) return;
+      var weekDates = monday ? getWeekDates(monday) : null;
+      Object.keys(days).forEach(function(d) {
+        if (!dayTotals[d]) dayTotals[d]={total:0,turnoD:0,turnoN:0,count:0};
+        var dia=days[d]['DIA']||{}, noche=days[d]['NOCHE']||{};
+        var diaSum=(dia.base||0)+(dia.propina||0)+(dia.grupo||0)+(dia.logros||0);
+        var nocheAcum=(noche.base||0)+(noche.propina||0)+(noche.grupo||0)+(noche.logros||0);
+        var nocheReal=Math.max(0,nocheAcum-diaSum);
+        dayTotals[d].total+=diaSum+nocheReal; dayTotals[d].turnoD+=diaSum; dayTotals[d].turnoN+=nocheReal; dayTotals[d].count+=1;
+        if (diaSum>0)    { shiftTotals.DIA+=diaSum;       shiftCount.DIA++; }
+        if (nocheReal>0) { shiftTotals.NOCHE+=nocheReal;  shiftCount.NOCHE++; }
+        if (!weekDetail[d]) weekDetail[d]={DIA:[],NOCHE:[]};
+        // Fecha REAL de ese día específico (no la del lunes de inicio de semana)
+        var dIdx = DAY_NAMES.indexOf(d);
+        var realDs = (weekDates && dIdx>=0) ? weekDates[dIdx] : monday;
+        if (diaSum>0)    weekDetail[d].DIA.push({val:diaSum, ds:realDs, weekLabel:weekLabel});
+        if (nocheReal>0) weekDetail[d].NOCHE.push({val:nocheReal, ds:realDs, weekLabel:weekLabel});
+      });
+    }
+    // Solo procesamos del historial las semanas DISTINTAS a la actual,
+    // para no duplicarla si ya fue guardada (existe en hist con el mismo weekIndex).
+    hist.forEach(function(w){ if (w.weekIndex !== currentWeekIndex) acum(w.days, new Date(w.dateStart), w.weekLabel); });
+    // Incluir semana actual (siempre desde sessionData, fuente de verdad en curso)
+    var cur={};
+    DAY_NAMES.forEach(function(day){
+      SHIFTS.forEach(function(sh){
+        FIELDS.forEach(function(f){
+          var key=currentWeekIndex+'_'+day+'_'+sh.key+'_'+f.key;
+          var v=parseFloat(sessionData[key]||'0')||0;
+          if (v>0) { if(!cur[day])cur[day]={}; if(!cur[day][sh.key])cur[day][sh.key]={}; cur[day][sh.key][f.key]=v; }
+        });
+      });
+    });
+    acum(cur, allWeeks[currentWeekIndex], 'Semana actual');
+
+    var dayOrder=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+    var sorted=dayOrder.filter(function(d){return dayTotals[d];}).sort(function(a,b){return dayTotals[b].total-dayTotals[a].total;});
+    if (!sorted.length) { prodHTML='<div class="stats-empty">Registrá días para ver productividad.</div>'; return; }
+
+    var totalSh=shiftTotals.DIA+shiftTotals.NOCHE||1;
+    var emojis=['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣'];
+    var pctD=((shiftTotals.DIA/totalSh)*100).toFixed(1);
+    var pctN=((shiftTotals.NOCHE/totalSh)*100).toFixed(1);
+
+    // ── Mejor turno INDIVIDUAL del MES ACTUAL para cada franja (Día/Noche) ──
+    // Un solo turno puntual: el sábado X o el martes Y que más generó, no una suma.
+    var nowD=new Date(), curY=nowD.getFullYear(), curM=nowD.getMonth();
+    var bestMonthD={val:0,day:null,date:null}, bestMonthN={val:0,day:null,date:null};
+    dayOrder.forEach(function(d){
+      (weekDetail[d].DIA||[]).forEach(function(e){
+        if (e.ds.getFullYear()===curY && e.ds.getMonth()===curM && e.val>bestMonthD.val) bestMonthD={val:e.val,day:d,date:e.ds};
+      });
+      (weekDetail[d].NOCHE||[]).forEach(function(e){
+        if (e.ds.getFullYear()===curY && e.ds.getMonth()===curM && e.val>bestMonthN.val) bestMonthN={val:e.val,day:d,date:e.ds};
+      });
+    });
+
+    // ── Construye el panel de desglose mensual para un turno (DIA o NOCHE) ──
+    // Por mes: UN renglón por día de semana (Lunes, Martes...) con la suma de ese turno.
+    // Al tocar el renglón se despliega el detalle de cada ocurrencia individual de ese día.
+    function buildDetailPanel(turno) {
+      var icon = turno==='DIA' ? '🌞' : '🌙';
+      var label = turno==='DIA' ? 'Turno Día' : 'Turno Noche';
+      var rows = [];
+      dayOrder.forEach(function(d){
+        (weekDetail[d][turno]||[]).forEach(function(e){
+          rows.push({day:d, val:e.val, ds:e.ds, weekLabel:e.weekLabel});
+        });
+      });
+      if (!rows.length) return '<div class="stats-empty" style="padding:10px 0">Sin registros de '+label.toLowerCase()+'.</div>';
+
+      // Agrupar por mes (usando la fecha de inicio de semana)
+      var byMonth={};
+      rows.forEach(function(r){
+        var key=r.ds.getFullYear()+'-'+String(r.ds.getMonth()+1).padStart(2,'0');
+        if (!byMonth[key]) byMonth[key]={year:r.ds.getFullYear(),month:r.ds.getMonth(),items:[]};
+        byMonth[key].items.push(r);
+      });
+      var monthKeys=Object.keys(byMonth).sort(function(a,b){return b.localeCompare(a);});
+
+      var out='<div class="prod-detail-title">'+icon+' '+label+' · Desglose por mes</div>';
+      monthKeys.forEach(function(mk){
+        var mInfo=byMonth[mk];
+        // Agrupar las ocurrencias del mes por día de semana
+        var byDay={};
+        mInfo.items.forEach(function(r){
+          if (!byDay[r.day]) byDay[r.day]={day:r.day, total:0, occ:[]};
+          byDay[r.day].total+=r.val;
+          byDay[r.day].occ.push(r);
+        });
+        var dayRows=Object.values(byDay).sort(function(a,b){return b.total-a.total;});
+        var best=dayRows[0];
+        out += '<div style="font-size:0.68rem;font-weight:800;color:var(--sub);margin:10px 0 6px">'+months[mInfo.month]+' '+mInfo.year+'</div>';
+        out += '<div class="prod-detail-best">🏆 Mejor: <strong>'+best.day+'</strong> · Total turnos de '+(turno==='DIA'?'día':'noche')+': '+fmtARShtml(best.total)+'</div>';
+        out += dayRows.map(function(dr,i){
+          var uidSub='proddet_sub_'+turno+'_'+mk+'_'+i+'_'+Math.random().toString(36).slice(2);
+          var occSorted=dr.occ.slice().sort(function(a,b){return b.val-a.val;});
+          var subHTML=occSorted.map(function(o,j){
+            return '<div class="prod-detail-row">' +
+              '<div class="prod-detail-rank">'+(j+1)+'</div>' +
+              '<div class="prod-detail-info"><div class="prod-detail-day">'+dr.day+'</div><div class="prod-detail-date">'+String(o.ds.getDate()).padStart(2,'0')+' '+months[o.ds.getMonth()]+' · '+o.weekLabel+'</div></div>' +
+              '<div class="prod-detail-val">'+fmtARShtml(o.val)+'</div>' +
+            '</div>';
+          }).join('');
+          return '<div class="prod-detail-row prod-detail-row-clickable" onclick="var d=document.getElementById(\''+uidSub+'\');d.classList.toggle(\'open\');event.stopPropagation();">' +
+            '<div class="prod-detail-rank">'+(i+1)+'</div>' +
+            '<div class="prod-detail-info"><div class="prod-detail-day">'+dr.day+'</div><div class="prod-detail-date">'+dr.occ.length+' '+(dr.occ.length===1?'vez':'veces')+' este mes · Tocar para ver detalle ▾</div></div>' +
+            '<div class="prod-detail-val">'+fmtARShtml(dr.total)+'</div>' +
+          '</div>' +
+          '<div class="prod-detail-subpanel" id="'+uidSub+'">'+subHTML+'</div>';
+        }).join('');
+      });
+      return out;
+    }
+
+    // ── Construye el panel de desglose mensual para UN DÍA de semana (todos sus Viernes, etc.) ──
+    // Combina Día+Noche de cada ocurrencia, ordenado de mayor a menor, agrupado por mes.
+    function buildDayDetailPanel(dayName) {
+      var rows = [];
+      (weekDetail[dayName].DIA||[]).forEach(function(e){ rows.push({turno:'🌞',val:e.val,ds:e.ds,weekLabel:e.weekLabel}); });
+      (weekDetail[dayName].NOCHE||[]).forEach(function(e){ rows.push({turno:'🌙',val:e.val,ds:e.ds,weekLabel:e.weekLabel}); });
+      if (!rows.length) return '<div class="stats-empty" style="padding:10px 0">Sin registros.</div>';
+
+      var byMonth={};
+      rows.forEach(function(r){
+        var key=r.ds.getFullYear()+'-'+String(r.ds.getMonth()+1).padStart(2,'0');
+        if (!byMonth[key]) byMonth[key]={year:r.ds.getFullYear(),month:r.ds.getMonth(),items:[]};
+        byMonth[key].items.push(r);
+      });
+      var monthKeys=Object.keys(byMonth).sort(function(a,b){return b.localeCompare(a);});
+
+      var out='<div class="prod-detail-title">📆 Todos los '+dayName+' · Desglose por mes</div>';
+      monthKeys.forEach(function(mk){
+        var mInfo=byMonth[mk];
+        // Agrupar por FECHA exacta para sumar Día+Noche de esa misma ocurrencia
+        var byDate={};
+        mInfo.items.forEach(function(r){
+          var dk=r.ds.getFullYear()+'-'+r.ds.getMonth()+'-'+r.ds.getDate();
+          if (!byDate[dk]) byDate[dk]={ds:r.ds, weekLabel:r.weekLabel, total:0};
+          byDate[dk].total+=r.val;
+        });
+        var dateRows=Object.values(byDate).sort(function(a,b){return b.total-a.total;});
+        var best=dateRows[0];
+        var items=mInfo.items.slice().sort(function(a,b){return b.val-a.val;});
+        out += '<div style="font-size:0.68rem;font-weight:800;color:var(--sub);margin:10px 0 6px">'+months[mInfo.month]+' '+mInfo.year+'</div>';
+        out += '<div class="prod-detail-best">🏆 '+dayName+' '+String(best.ds.getDate()).padStart(2,'0')+' '+months[best.ds.getMonth()]+' — '+fmtARShtml(best.total)+'</div>';
+        out += items.map(function(it,i){
+          return '<div class="prod-detail-row">' +
+            '<div class="prod-detail-rank">'+(i+1)+'</div>' +
+            '<div class="prod-detail-info"><div class="prod-detail-day">'+it.turno+' '+(it.turno==='🌞'?'Día':'Noche')+'</div><div class="prod-detail-date">'+String(it.ds.getDate()).padStart(2,'0')+' '+months[it.ds.getMonth()]+' · '+it.weekLabel+'</div></div>' +
+            '<div class="prod-detail-val">'+fmtARShtml(it.val)+'</div>' +
+          '</div>';
+        }).join('');
+      });
+      return out;
+    }
+
+    var detailDiaHTML = buildDetailPanel('DIA');
+    var detailNocheHTML = buildDetailPanel('NOCHE');
+    var uidDia='proddet_dia_'+Math.random().toString(36).slice(2);
+    var uidNoche='proddet_noche_'+Math.random().toString(36).slice(2);
+    var toggleJS = "var d=document.getElementById('%ID%');d.classList.toggle('open');";
+
+    prodHTML =
+      '<div class="prod-shift-summary">' +
+        '<div class="prod-shift-card prod-shift-dia" onclick="'+toggleJS.replace('%ID%',uidDia)+'"><div class="prod-sc-icon">🌞</div><div class="prod-sc-lbl">Turno Día</div><div class="prod-sc-val">'+fmtARShtml(bestMonthD.val)+'</div><div class="prod-sc-pct">'+(bestMonthD.day?'Mejor: '+bestMonthD.day+' '+String(bestMonthD.date.getDate()).padStart(2,'0')+' '+months[bestMonthD.date.getMonth()]:'Sin datos este mes')+'</div><div class="prod-sc-hint">Tocar para ver detalle ▾</div></div>' +
+        '<div class="prod-shift-card prod-shift-noche" onclick="'+toggleJS.replace('%ID%',uidNoche)+'"><div class="prod-sc-icon">🌙</div><div class="prod-sc-lbl">Turno Noche</div><div class="prod-sc-val">'+fmtARShtml(bestMonthN.val)+'</div><div class="prod-sc-pct">'+(bestMonthN.day?'Mejor: '+bestMonthN.day+' '+String(bestMonthN.date.getDate()).padStart(2,'0')+' '+months[bestMonthN.date.getMonth()]:'Sin datos este mes')+'</div><div class="prod-sc-hint">Tocar para ver detalle ▾</div></div>' +
+      '</div>' +
+      '<div class="prod-detail-panel" id="'+uidDia+'">'+detailDiaHTML+'</div>' +
+      '<div class="prod-detail-panel" id="'+uidNoche+'">'+detailNocheHTML+'</div>' +
+      '<div class="prod-days-title">Ranking de días</div>' +
+      sorted.map(function(d,i){
+        var dt=dayTotals[d];
+        // Suma total acumulada (no promedio): todos los miércoles, todos los viernes, etc.
+        var sumD=dt.turnoD, sumN=dt.turnoN;
+        // Choque visual: % del total del día (turnoD vs turnoN) repartido desde el centro
+        var dtot=sumD+sumN;
+        var pD = dtot>0 ? (sumD/dtot)*100 : 0;
+        var pN = dtot>0 ? (sumN/dtot)*100 : 0;
+        var winner = sumD===sumN ? null : (sumD>sumN ? 'DIA':'NOCHE');
+        var uidRow='proddet_row_'+i+'_'+Math.random().toString(36).slice(2);
+        var rowDetailHTML = buildDayDetailPanel(d);
+        return '<div class="prod-day-row prod-day-row-clickable" onclick="'+toggleJS.replace('%ID%',uidRow)+'">' +
+          '<div class="prod-day-header"><span class="prod-day-emoji">'+(emojis[i]||'▪')+'</span><span class="prod-day-name">'+d+'</span><span class="prod-day-total">'+fmtARShtml(dt.total)+'</span></div>' +
+          '<div class="prod-clash-wrap"><div class="prod-clash-day" style="width:'+pD.toFixed(1)+'%"></div><div class="prod-clash-mid"></div><div class="prod-clash-noche" style="width:'+pN.toFixed(1)+'%"></div></div>' +
+          '<div class="prod-day-detail">' +
+            '<span class="prod-shift-lbl'+(winner==='DIA'?' is-winner':'')+'">🌞 Día <span class="prod-shift-val">'+fmtARShtml(sumD)+'</span>'+(winner==='DIA'?' 👑':'')+'</span>' +
+            '<span class="prod-shift-lbl'+(winner==='NOCHE'?' is-winner':'')+'">'+(winner==='NOCHE'?'👑 ':'')+'Noche <span class="prod-shift-val">'+fmtARShtml(sumN)+'</span> 🌙</span>' +
+          '</div>' +
+          '<div class="prod-detail-panel" id="'+uidRow+'" onclick="event.stopPropagation()">'+rowDetailHTML+'</div>' +
+        '</div>';
+      }).join('');
+  })();
+  html += accordion('📆', 'Días y Turnos Productivos', prodHTML, false);
+
+  container.innerHTML = html;
+}
+function hideBanner() {
+  if (banner) banner.style.display = 'none';
+}
+
+// ── PWA install banner variables ──
+const banner   = document.getElementById('install-banner');
+const btnInst  = document.getElementById('install-btn');
+const btnClose = document.getElementById('install-close');
+const btnLater = document.getElementById('install-later');
+const iosNote  = document.getElementById('ios-instructions');
+let _deferredPrompt = null;
+
+function showBanner() {
+  const dismissed = localStorage.getItem('pwa_install_dismissed');
+  if (dismissed) return;
+  if (banner) banner.style.display = 'flex';
+}
+
+// Android / Chrome — beforeinstallprompt
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _deferredPrompt = e;
+  setTimeout(showBanner, 3000); // esperar 3s para no interrumpir al cargar
+});
+
+// iOS detection
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isInStandalone = window.navigator.standalone === true;
+if (isIOS && !isInStandalone) {
+  setTimeout(showBanner, 3000);
+  if (iosNote) iosNote.style.display = 'block';
+  if (btnInst) btnInst.style.display = 'none';
+}
+
+// Install button
+if (btnInst) btnInst.addEventListener('click', async () => {
+  if (_deferredPrompt) {
+    _deferredPrompt.prompt();
+    const { outcome } = await _deferredPrompt.userChoice;
+    _deferredPrompt = null;
+    hideBanner();
+    if (outcome === 'accepted') showToast('✅ Instalando app…');
+  }
+});
+
+// Dismiss buttons
+[btnClose, btnLater].forEach(b => {
+  if (b) b.addEventListener('click', () => {
+    hideBanner();
+    localStorage.setItem('pwa_install_dismissed', '1');
+  });
+});
+
+// Hide banner if already installed
+window.addEventListener('appinstalled', () => {
+  hideBanner();
+  showToast('✅ ¡App instalada! Ya podés usarla sin internet.');
+});
+</script>
+
+<script>
+function toggleTotals(){
+ const c=document.getElementById('totalsContent');
+ const a=document.getElementById('totalsArrow');
+ if(!c||!a)return;
+ const open=c.style.display==='block';
+ c.style.display=open?'none':'block';
+ a.textContent=open?'▶':'▼';
+}
+</script>
+
+<script>
+// ── Passive listeners para scroll táctil (reduce trabajo del hilo principal) ──
+document.addEventListener('touchstart', function(){}, { passive: true });
+document.addEventListener('touchmove',  function(){}, { passive: true });
+
+// ── Pausar cálculos cuando la app está en segundo plano ──────────
+// El navegador sigue ejecutando JS aunque la pantalla esté apagada.
+// Con visibilitychange evitamos trabajo innecesario.
+let _calcPending = false;
+const _origCalcTotals = calcTotals;
+window.calcTotals = function() {
+  if (document.hidden) {
+    _calcPending = true;
+    return;
+  }
+  _origCalcTotals();
+};
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden && _calcPending) {
+    _calcPending = false;
+    _origCalcTotals();
+  }
+});
+
+
+// ── Exportar / Importar datos ────────────────────────────────────
+async function exportarDatos() {
+  try {
+    const exportObj = {
+      version: 1,
+      exportDate: new Date().toISOString(),
+      historial: JSON.parse(localStorage.getItem('delivery_v4_historial') || '[]'),
+      lastWeek: localStorage.getItem('delivery_v4_lastWeek'),
+      darkPref: localStorage.getItem('delivery_dark_pref'),
+      weekSnaps: {}
+    };
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('delivery_v4_w')) exportObj.weekSnaps[k] = localStorage.getItem(k);
+    }
+
+    const json  = JSON.stringify(exportObj, null, 2);
+    const fecha = new Date().toISOString().slice(0,10);
+    const fname = `misemana-backup-${fecha}.json`;
+    const blob  = new Blob([json], { type: 'application/json' });
+
+    // Descarga directa a Descargas del teléfono
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fname;
+    a.style.display='none';
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
+    showToast('✅ Guardado en Descargas: '+fname);
+  } catch(e) {
+    if (e.name !== 'AbortError') showToast('❌ Error al exportar: ' + e.message);
+  }
+}
+
+function importarDatos(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const obj = JSON.parse(e.target.result);
+      if (!obj.version || !obj.historial) {
+        showToast('❌ Archivo inválido o corrupto');
+        return;
+      }
+      showConfirm(
+        '¿Importar datos del backup? Esto reemplazará el historial actual.',
+        function() {
+          // Restaurar historial
+          localStorage.setItem('delivery_v4_historial', JSON.stringify(obj.historial));
+          // Restaurar snapshots de semanas
+          if (obj.weekSnaps) {
+            Object.keys(obj.weekSnaps).forEach(k => {
+              localStorage.setItem(k, obj.weekSnaps[k]);
+            });
+          }
+          // Restaurar última semana abierta
+          if (obj.lastWeek !== null && obj.lastWeek !== undefined) {
+            localStorage.setItem('delivery_v4_lastWeek', obj.lastWeek);
+          }
+          // Restaurar preferencia de modo
+          if (obj.darkPref) {
+            localStorage.setItem('delivery_dark_pref', obj.darkPref);
+          }
+          showToast('✅ ' + obj.historial.length + ' semanas importadas. Recargá la app.');
+          // Recargar después de 2 segundos para aplicar todo
+          setTimeout(() => location.reload(), 2000);
+        }
+      );
+    } catch(err) {
+      showToast('❌ Error al leer el archivo: ' + err.message);
+    }
+    // Resetear el input para permitir reimportar el mismo archivo
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// ── Toggle Modo: Noche / Día ─────────────────────────────────
+// El botón muestra el ESTADO ACTUAL y al tocarlo cambia al otro
+(function initDarkToggle() {
+  const btn = document.getElementById('darkToggleBtn');
+  const PREF_KEY = 'delivery_dark_pref';
+  // Limpiar preferencia vieja de versiones anteriores y empezar en claro
+  const saved = localStorage.getItem(PREF_KEY) === 'dark' ? 'dark' : 'light';
+
+  function applyMode(mode) {
+    document.body.classList.remove('dark-forced', 'light-forced');
+    if (mode === 'dark') {
+      document.body.classList.add('dark-forced');
+      if (btn) btn.textContent = '\uD83C\uDF19 Noche';  // mostrás que estás en Noche
+    } else {
+      document.body.classList.add('light-forced');
+      if (btn) btn.textContent = '\u2600\uFE0F D\u00EDa';  // mostrás que estás en Día
+    }
+    localStorage.setItem(PREF_KEY, mode);
+  }
+
+  window.toggleDarkMode = function() {
+    const cur = localStorage.getItem(PREF_KEY) || 'light';
+    applyMode(cur === 'dark' ? 'light' : 'dark');
+  };
+
+  applyMode(saved);
+})();
+</script>
+
+</body>
+</html>
